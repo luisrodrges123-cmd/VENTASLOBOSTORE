@@ -286,6 +286,8 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    let productsData = {};
+
     function showTab(t) {
         document.getElementById('sec-p').classList.toggle('hidden', t !== 'p');
         document.getElementById('sec-o').classList.toggle('hidden', t !== 'o');
@@ -296,17 +298,21 @@
     db.ref("products").on("value", (snap) => {
         const list = document.getElementById("p-list");
         list.innerHTML = "";
+        productsData = {};
+
         snap.forEach((child) => {
             const p = child.val();
             const key = child.key;
+            productsData[key] = p;
+
             list.innerHTML += `
                 <tr>
-                    <td><strong>${p.name}</strong></td>
-                    <td>$${p.price}</td>
-                    <td><span style="color:var(--neon-purple)">${p.category || '-'}</span></td>
-                    <td><span class="stock-badge">${p.stock || '0'}</span></td>
+                    <td><strong>${p.name || 'Sin Nombre'}</strong></td>
+                    <td>$${p.price || 0}</td>
+                    <td><span style="color:var(--neon-purple)">${p.category || 'General'}</span></td>
+                    <td><span class="stock-badge">${p.stock || 0}</span></td>
                     <td>
-                        <button class="action-btn btn-edit" onclick="editProduct('${key}', '${p.name}', ${p.price}, '${p.category || ''}', ${p.stock || 0}, '${p.description || ''}', '${p.imageUrl || ''}')">EDITAR</button>
+                        <button class="action-btn btn-edit" onclick="prepareEdit('${key}')">EDITAR</button>
                         <button class="action-btn btn-delete" onclick="deleteItem('products/${key}')">X</button>
                     </td>
                 </tr>`;
@@ -331,56 +337,73 @@
     async function save() {
         const id = document.getElementById("edit-id").value;
         const data = {
-            name: document.getElementById("name").value,
-            price: parseFloat(document.getElementById("price").value),
-            category: document.getElementById("category").value,
+            name: document.getElementById("name").value.trim(),
+            price: parseFloat(document.getElementById("price").value) || 0,
+            category: document.getElementById("category").value.trim(),
             stock: parseInt(document.getElementById("stock").value) || 0,
-            description: document.getElementById("desc").value,
-            imageUrl: document.getElementById("img").value
+            description: document.getElementById("desc").value.trim(),
+            imageUrl: document.getElementById("img").value.trim()
         };
 
-        if (!data.name || isNaN(data.price)) return alert("El nombre y precio son obligatorios.");
+        if (!data.name || isNaN(data.price)) {
+            alert("El nombre y el precio son obligatorios.");
+            return;
+        }
 
         try {
             if (id) {
-                await db.ref("products/" + id).update(data);
-                alert("¡Producto actualizado exitosamente!");
+                await db.ref("products/" + id).set(data);
+                alert("¡Producto actualizado!");
             } else {
                 await db.ref("products").push(data);
-                alert("¡Nuevo producto registrado!");
+                alert("¡Producto guardado!");
             }
             resetForm();
         } catch (e) {
-            alert("Error: " + e.message);
+            alert("Error al guardar: " + e.message);
         }
     }
 
-    function editProduct(id, name, price, cat, stock, desc, img) {
-        document.getElementById("edit-id").value = id;
-        document.getElementById("name").value = name;
-        document.getElementById("price").value = price;
-        document.getElementById("category").value = cat;
-        document.getElementById("stock").value = stock;
-        document.getElementById("desc").value = desc;
-        document.getElementById("img").value = img;
+    function prepareEdit(id) {
+        const p = productsData[id];
+        if (!p) return;
 
-        document.getElementById("form-title").innerText = "EDITANDO: " + name;
+        document.getElementById("edit-id").value = id;
+        document.getElementById("name").value = p.name || "";
+        document.getElementById("price").value = p.price || 0;
+        document.getElementById("category").value = p.category || "";
+        document.getElementById("stock").value = p.stock || 0;
+        document.getElementById("desc").value = p.description || "";
+        document.getElementById("img").value = p.imageUrl || "";
+
+        document.getElementById("form-title").innerText = "EDITANDO: " + p.name;
         document.getElementById("btn-save").innerText = "ACTUALIZAR CAMBIOS";
         document.getElementById("btn-cancel").classList.remove("hidden");
+
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetForm() {
         document.getElementById("edit-id").value = "";
-        document.querySelectorAll('input, textarea').forEach(el => el.value = "");
+        document.getElementById("name").value = "";
+        document.getElementById("price").value = "";
+        document.getElementById("category").value = "";
+        document.getElementById("stock").value = "";
+        document.getElementById("desc").value = "";
+        document.getElementById("img").value = "";
+
         document.getElementById("form-title").innerText = "NUEVO PRODUCTO";
         document.getElementById("btn-save").innerText = "GUARDAR PRODUCTO";
         document.getElementById("btn-cancel").classList.add("hidden");
     }
 
     async function deleteItem(path) {
-        if(confirm("¿Estás seguro de eliminar este registro?")) {
-            await db.ref(path).remove();
+        if(confirm("¿Estás seguro de eliminar esto?")) {
+            try {
+                await db.ref(path).remove();
+            } catch (e) {
+                alert("Error al eliminar: " + e.message);
+            }
         }
     }
 </script>

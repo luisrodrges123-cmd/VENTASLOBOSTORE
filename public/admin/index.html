@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ADMIN PANEL - Ventas Lobo Store</title>
+    <title>SISTEMA PREMIUM - Ventas Lobo Store</title>
     <style>
         :root {
             --neon-cyan: #00F2FF;
@@ -12,203 +12,408 @@
             --dark-card: #121212;
             --text-high: #E0E0E0;
             --text-med: #9E9E9E;
+            --glass: rgba(255, 255, 255, 0.03);
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-high);
             margin: 0;
             padding: 20px;
+            background: radial-gradient(circle at top right, #1a1a1a, #050505);
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
             background: var(--dark-card);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0,242,255,0.1);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(0,242,255,0.05);
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
         }
 
         .header {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            text-align: center;
         }
 
         .logo {
-            width: 60px;
-            height: 60px;
-            margin-right: 15px;
-            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px var(--neon-cyan);
             border: 2px solid var(--neon-cyan);
+            transition: 0.5s;
+        }
+
+        .logo:hover {
+            transform: scale(1.05) rotate(5deg);
         }
 
         h1 {
             margin: 0;
             color: var(--neon-cyan);
             text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(0,242,255,0.5);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            background: var(--glass);
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--text-med);
+            font-weight: bold;
+            border-radius: 10px;
+            transition: 0.3s;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .tab.active {
+            background: var(--neon-purple);
+            color: white;
+            box-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        .form-section {
+            background: var(--glass);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .form-section h3 {
+            color: var(--neon-cyan);
+            margin-top: 0;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .grid-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--neon-cyan);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,242,255,0.2);
+        }
+
+        textarea { height: 100px; resize: none; grid-column: span 2; }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 14px 25px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            transition: 0.3s;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-save { background: var(--neon-cyan); color: black; flex: 2; }
+        .btn-save:hover { background: white; box-shadow: 0 0 20px var(--neon-cyan); transform: translateY(-2px); }
+
+        .btn-cancel { background: #333; color: white; flex: 1; }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--neon-cyan);
+            font-size: 0.75rem;
+            text-transform: uppercase;
             letter-spacing: 2px;
         }
 
-        .tabs { display: flex; border-bottom: 2px solid #222; margin-bottom: 20px; }
-        .tab { padding: 10px 20px; cursor: pointer; color: var(--text-med); }
-        .tab.active { color: var(--neon-purple); border-bottom: 3px solid var(--neon-purple); }
+        td {
+            padding: 15px;
+            background: rgba(255,255,255,0.02);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
 
-        .form-section { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; margin-bottom: 30px; border-left: 4px solid var(--neon-cyan); }
-        .form-group { margin-bottom: 15px; }
-        input, textarea { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
+        tr td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-radius: 12px 0 0 12px; }
+        tr td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-radius: 0 12px 12px 0; }
 
-        .btn { padding: 12px 25px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
-        .btn-add { background-color: var(--neon-cyan); color: black; width: 100%; }
-        .btn-edit { background-color: var(--neon-purple); color: white; padding: 5px 10px; margin-right: 5px; }
-        .btn-delete { background-color: #FF3B30; color: white; padding: 5px 10px; }
+        .action-btn {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 5px;
+        }
 
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
-        th { color: var(--neon-cyan); font-size: 12px; }
+        .btn-edit { background: var(--neon-purple); color: white; }
+        .btn-delete { background: #FF3B30; color: white; }
 
-        .status-chip { padding: 4px 10px; border-radius: 20px; font-size: 11px; border: 1px solid var(--neon-purple); color: var(--neon-purple); }
+        .stock-badge {
+            background: rgba(0, 242, 255, 0.1);
+            color: var(--neon-cyan);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
 
         .hidden { display: none; }
+
+        @media (max-width: 768px) {
+            .grid-inputs { grid-template-columns: 1fr; }
+            textarea { grid-column: span 1; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <img src="https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212004652_3.jpg" alt="logo" class="logo">
-        <h1>ADMIN PANEL PREMIUM</h1>
+        <a href="https://postimg.cc/JyW9Jt8R" target="_blank"><img src="https://i.postimg.cc/JyW9Jt8R/logo-lobo.png" alt="logo-lobo" class="logo"></a>
+        <h1>MODO SISTEMA PREMIUM</h1>
     </div>
 
     <div class="tabs">
-        <div class="tab active" id="tab-products" onclick="showTab('products')">INVENTARIO</div>
-        <div class="tab" id="tab-orders" onclick="showTab('orders')">PEDIDOS</div>
-        <div class="tab" onclick="window.open('../', '_blank')">VER TIENDA 🌐</div>
+        <div class="tab active" id="tab-p" onclick="showTab('p')">INVENTARIO</div>
+        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
+        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">VER TIENDA 🌐</div>
     </div>
 
-    <div id="section-products">
+    <div id="sec-p">
         <div class="form-section">
             <h3 id="form-title">NUEVO PRODUCTO</h3>
             <input type="hidden" id="edit-id">
-            <div class="form-group"><input type="text" id="name" placeholder="Nombre del Producto"></div>
-            <div class="form-group"><input type="number" id="price" placeholder="Precio"></div>
-            <div class="form-group"><textarea id="description" placeholder="Descripción"></textarea></div>
-            <div class="form-group"><input type="text" id="imageUrl" placeholder="URL Imagen"></div>
-            <button class="btn btn-add" id="btn-save" onclick="saveProduct()">GUARDAR PRODUCTO</button>
-            <button class="btn btn-delete hidden" id="btn-cancel" onclick="resetForm()" style="margin-top:10px; width:100%">CANCELAR</button>
+            <div class="grid-inputs">
+                <input type="text" id="name" placeholder="Nombre del Producto">
+                <input type="number" id="price" placeholder="Precio ($)">
+                <input type="text" id="category" placeholder="Categoría (Ej: AirPods, Relojes)">
+                <input type="number" id="stock" placeholder="Stock Disponible">
+                <input type="text" id="img" placeholder="URL de Imagen (Enlace)">
+                <textarea id="desc" placeholder="Descripción de características detalladas..."></textarea>
+            </div>
+            <div class="btn-container">
+                <button class="btn btn-save" id="btn-save" onclick="save()">GUARDAR PRODUCTO</button>
+                <button class="btn btn-cancel hidden" id="btn-cancel" onclick="resetForm()">CANCELAR</button>
+            </div>
         </div>
 
         <table>
-            <thead><tr><th>Producto</th><th>Precio</th><th>Acciones</th></tr></thead>
-            <tbody id="product-list"></tbody>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Precio</th>
+                    <th>Categoría</th>
+                    <th>Stock</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="p-list"></tbody>
         </table>
     </div>
 
-    <div id="section-orders" class="hidden">
+    <div id="sec-o" class="hidden">
         <table>
-            <thead><tr><th>Cliente</th><th>Producto</th><th>Estado</th><th>Acción</th></tr></thead>
-            <tbody id="order-list"></tbody>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>WhatsApp</th>
+                    <th>Producto</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody id="o-list"></tbody>
         </table>
     </div>
 </div>
 
+<!-- Usando compat SDK para evitar problemas de migración rápidos -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyB-7VpETFI6SxNNVEDhrXRnkU1nQjFBV9g",
-        databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com",
-        projectId: "producto-enventa",
-        storageBucket: "producto-enventa.firebasestorage.app",
-    };
+    const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function showTab(type) {
-        document.getElementById('section-products').classList.toggle('hidden', type !== 'products');
-        document.getElementById('section-orders').classList.toggle('hidden', type !== 'orders');
-        document.getElementById('tab-products').classList.toggle('active', type === 'products');
-        document.getElementById('tab-orders').classList.toggle('active', type === 'orders');
-        if (type === 'orders') loadOrders();
+    let productsData = {}; // Memoria local para edición segura
+
+    function showTab(t) {
+        document.getElementById('sec-p').classList.toggle('hidden', t !== 'p');
+        document.getElementById('sec-o').classList.toggle('hidden', t !== 'o');
+        document.getElementById('tab-p').classList.toggle('active', t === 'p');
+        document.getElementById('tab-o').classList.toggle('active', t === 'o');
     }
 
-    function loadProducts() {
-        db.ref("products").on("value", (snapshot) => {
-            const list = document.getElementById("product-list");
-            list.innerHTML = "";
-            snapshot.forEach((child) => {
-                const p = child.val();
-                list.innerHTML += `<tr>
-                    <td>${p.name}</td>
-                    <td>$${p.price}</td>
+    // Escuchar cambios en productos
+    db.ref("products").on("value", (snap) => {
+        const list = document.getElementById("p-list");
+        list.innerHTML = "";
+        productsData = {};
+
+        snap.forEach((child) => {
+            const p = child.val();
+            const key = child.key;
+            productsData[key] = p;
+
+            list.innerHTML += `
+                <tr>
+                    <td><strong>${p.name || 'Sin Nombre'}</strong></td>
+                    <td>$${p.price || 0}</td>
+                    <td><span style="color:var(--neon-purple)">${p.category || 'General'}</span></td>
+                    <td><span class="stock-badge">${p.stock || 0}</span></td>
                     <td>
-                        <button class="btn btn-edit" onclick="editProduct('${child.key}', '${p.name}', ${p.price}, '${p.description || ''}', '${p.imageUrl || ''}')">Edit</button>
-                        <button class="btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
+                        <button class="action-btn btn-edit" onclick="prepareEdit('${key}')">EDITAR</button>
+                        <button class="action-btn btn-delete" onclick="deleteItem('products/${key}')">X</button>
                     </td>
                 </tr>`;
-            });
         });
-    }
+    });
 
-    function loadOrders() {
-        db.ref("orders").on("value", (snapshot) => {
-            const list = document.getElementById("order-list");
-            list.innerHTML = "";
-            snapshot.forEach((child) => {
-                const o = child.val();
-                list.innerHTML += `<tr>
+    // Escuchar cambios en pedidos
+    db.ref("orders").on("value", (snap) => {
+        const list = document.getElementById("o-list");
+        list.innerHTML = "";
+        snap.forEach((child) => {
+            const o = child.val();
+            list.innerHTML += `
+                <tr>
                     <td>${o.username}</td>
+                    <td>${o.phone}</td>
                     <td>${o.productName}</td>
-                    <td><span class="status-chip">${o.status}</span></td>
-                    <td><button class="btn btn-delete" onclick="deleteItem('orders/${child.key}')">X</button></td>
+                    <td><button class="action-btn btn-delete" onclick="deleteItem('orders/${child.key}')">ELIMINAR</button></td>
                 </tr>`;
-            });
         });
-    }
+    });
 
-    async function saveProduct() {
+    async function save() {
         const id = document.getElementById("edit-id").value;
         const data = {
-            name: document.getElementById("name").value,
-            price: parseFloat(document.getElementById("price").value),
-            description: document.getElementById("description").value,
-            imageUrl: document.getElementById("imageUrl").value
+            name: document.getElementById("name").value.trim(),
+            price: parseFloat(document.getElementById("price").value) || 0,
+            category: document.getElementById("category").value.trim(),
+            stock: parseInt(document.getElementById("stock").value) || 0,
+            description: document.getElementById("desc").value.trim(),
+            imageUrl: document.getElementById("img").value.trim()
         };
-        if (!data.name || isNaN(data.price)) return alert("Datos incompletos");
 
-        if (id) await db.ref("products/" + id).update(data);
-        else await db.ref("products").push(data);
-        alert("¡Guardado correctamente!");
-        resetForm();
+        if (!data.name || isNaN(data.price)) {
+            alert("El nombre y el precio son obligatorios.");
+            return;
+        }
+
+        try {
+            if (id) {
+                // ACTUALIZAR EXISTENTE
+                await db.ref("products/" + id).set(data);
+                alert("¡Producto actualizado!");
+            } else {
+                // CREAR NUEVO
+                await db.ref("products").push(data);
+                alert("¡Producto guardado!");
+            }
+            resetForm();
+        } catch (e) {
+            alert("Error al guardar: " + e.message);
+        }
     }
 
-    function editProduct(id, name, price, desc, img) {
+    function prepareEdit(id) {
+        const p = productsData[id];
+        if (!p) return;
+
+        // Llenar formulario
         document.getElementById("edit-id").value = id;
-        document.getElementById("name").value = name;
-        document.getElementById("price").value = price;
-        document.getElementById("description").value = desc;
-        document.getElementById("imageUrl").value = img;
-        document.getElementById("form-title").innerText = "EDITANDO PRODUCTO";
+        document.getElementById("name").value = p.name || "";
+        document.getElementById("price").value = p.price || 0;
+        document.getElementById("category").value = p.category || "";
+        document.getElementById("stock").value = p.stock || 0;
+        document.getElementById("desc").value = p.description || "";
+        document.getElementById("img").value = p.imageUrl || "";
+
+        // Cambiar UI
+        document.getElementById("form-title").innerText = "EDITANDO: " + p.name;
+        document.getElementById("btn-save").innerText = "ACTUALIZAR CAMBIOS";
         document.getElementById("btn-cancel").classList.remove("hidden");
+
+        // Scroll al formulario
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function resetForm() {
         document.getElementById("edit-id").value = "";
         document.getElementById("name").value = "";
         document.getElementById("price").value = "";
-        document.getElementById("description").value = "";
-        document.getElementById("imageUrl").value = "";
+        document.getElementById("category").value = "";
+        document.getElementById("stock").value = "";
+        document.getElementById("desc").value = "";
+        document.getElementById("img").value = "";
+
         document.getElementById("form-title").innerText = "NUEVO PRODUCTO";
+        document.getElementById("btn-save").innerText = "GUARDAR PRODUCTO";
         document.getElementById("btn-cancel").classList.add("hidden");
     }
 
-    async function deleteItem(path) { if(confirm("¿Eliminar?")) await db.ref(path).remove(); }
-
-    loadProducts();
+    async function deleteItem(path) {
+        if(confirm("¿Estás seguro de eliminar esto?")) {
+            try {
+                await db.ref(path).remove();
+            } catch (e) {
+                alert("Error al eliminar: " + e.message);
+            }
+        }
+    }
 </script>
 </body>
 </html>
