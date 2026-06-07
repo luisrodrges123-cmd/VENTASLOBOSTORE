@@ -16,8 +16,8 @@ const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.fir
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🐺 CONFIGURACIÓN BOT MODO PREMIUM (Nuevo Logo Metálico)
-const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212030616_14.jpg';
+// 🐺 CONFIGURACIÓN BOT MODO PREMIUM (Logo Oficial Metálico)
+const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212031737_15.jpg';
 const ADMIN_NUMBER = '5216682515249@s.whatsapp.net';
 
 const sessions = {};
