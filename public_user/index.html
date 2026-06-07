@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VENTAS LOBO STORE - Catálogo</title>
+    <style>
+        :root {
+            --neon-cyan: #00F2FF;
+            --neon-purple: #BC13FE;
+            --bg-black: #050505;
+            --dark-card: #121212;
+            --text-high: #E0E0E0;
+            --text-med: #9E9E9E;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-black); color: var(--text-high); margin: 0; padding: 0; }
+        .navbar { padding: 20px; display: flex; align-items: center; justify-content: center; background: rgba(18, 18, 18, 0.9); border-bottom: 1px solid rgba(0, 242, 255, 0.2); position: sticky; top: 0; z-index: 1000; }
+        .navbar img { width: 50px; height: 50px; margin-right: 15px; border-radius: 50%; border: 1px solid var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+        .navbar h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); letter-spacing: 2px; text-transform: uppercase; }
+        .hero { padding: 50px 20px; text-align: center; background: linear-gradient(to bottom, #0a0a0a, var(--bg-black)); }
+        .hero h2 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .container { max-width: 1200px; margin: auto; padding: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
+        .product-card { background: var(--dark-card); border-radius: 15px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; display: flex; flex-direction: column; }
+        .product-card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
+        .product-image { width: 100%; height: 280px; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .product-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
+        .product-name { font-size: 1.4rem; font-weight: bold; color: white; margin: 0; }
+        .product-category { font-size: 0.8rem; color: var(--neon-purple); text-transform: uppercase; margin-bottom: 10px; }
+        .product-price { font-size: 1.6rem; color: var(--neon-cyan); font-weight: 900; margin: 10px 0; }
+        .product-desc { font-size: 0.9rem; color: var(--text-med); line-height: 1.5; margin-bottom: 15px; }
+        .product-stock { font-size: 0.85rem; color: #ffcc00; margin-bottom: 20px; font-weight: bold; }
+        .btn-buy { margin-top: auto; display: block; width: 100%; padding: 14px; background: linear-gradient(45deg, #25D366, #128C7E); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; }
+
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: var(--dark-card); margin: 10% auto; padding: 30px; border: 1px solid var(--neon-cyan); width: 90%; max-width: 400px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2); }
+        .modal-header { color: var(--neon-cyan); text-align: center; margin-bottom: 25px; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <img src="https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212015037_12.jpg" alt="Logo">
+    <h1>VENTAS LOBO STORE</h1>
+</div>
+<div class="hero"><h2>Catálogo de Productos</h2><p>Calidad Premium y exclusividad 🐺</p></div>
+<div class="container"><div id="loader" style="text-align:center; padding: 50px; font-size: 1.2rem; color: var(--neon-cyan)">Cargando productos exclusivos...</div><div id="product-grid" class="product-grid"></div></div>
+
+<div id="orderModal" class="modal">
+    <div class="modal-content">
+        <h3 class="modal-header">CONFIRMAR PEDIDO</h3>
+        <input type="text" id="custName" placeholder="Tu Nombre Completo">
+        <input type="tel" id="custPhone" placeholder="Tu Número de WhatsApp">
+        <button class="btn-buy" onclick="finalizeOrder()">FINALIZAR POR WHATSAPP</button>
+        <button onclick="document.getElementById('orderModal').style.display='none'" style="background:none; border:none; color:grey; width:100%; margin-top:15px; cursor:pointer">Volver al catálogo</button>
+    </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    let selectedProd = null;
+
+    db.ref("products").on("value", (snap) => {
+        document.getElementById("loader").style.display = "none";
+        const grid = document.getElementById("product-grid"); grid.innerHTML = "";
+        snap.forEach((child) => {
+            const p = child.val();
+            const productCard = document.createElement("div");
+            productCard.className = "product-card";
+            const imgUrl = p.imageUrl || "https://via.placeholder.com/300x280?text=Sin+Imagen";
+
+            productCard.innerHTML = `
+                <img src="${imgUrl}" alt="${p.name}" class="product-image">
+                <div class="product-info">
+                    <span class="product-category">${p.category || 'General'}</span>
+                    <h3 class="product-name">${p.name}</h3>
+                    <div class="product-price">$${p.price}</div>
+                    <p class="product-desc">${p.description || 'Sin descripción detallada disponible.'}</p>
+                    <div class="product-stock">Stock: ${p.stock || 'Consultar'} unidades</div>
+                    <button class="btn-buy" onclick="openModal('${p.name}', ${p.price}, '${imgUrl}')">ORDENAR AHORA</button>
+                </div>
+            `;
+            grid.appendChild(productCard);
+        });
+    });
+
+    function openModal(name, price, img) {
+        selectedProd = { name, price, img };
+        document.getElementById("orderModal").style.display = "block";
+    }
+
+    async function finalizeOrder() {
+        const n = document.getElementById("custName").value;
+        const p = document.getElementById("custPhone").value;
+        if (!n || !p) return alert("Por favor, ingresa tu nombre.");
+
+        await db.ref("orders").push({ ...selectedProd, username: n, phone: p, status: "PENDIENTE", timestamp: Date.now() });
+        const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, quiero mi pedido.`;
+        window.open(`https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}`, '_blank');
+        document.getElementById("orderModal").style.display = "none";
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADMIN PANEL - Ventas Lobo Store</title>
+    <style>
+        :root {
+            --neon-cyan: #00F2FF;
+            --neon-purple: #BC13FE;
+            --bg-black: #050505;
+            --dark-card: #121212;
+            --text-high: #E0E0E0;
+            --text-med: #9E9E9E;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-black); color: var(--text-high); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: var(--dark-card); padding: 30px; border-radius: 20px; box-shadow: 0 0 20px rgba(0,242,255,0.1); border: 1px solid rgba(255,255,255,0.05); }
+        .header { display: flex; align-items: center; justify-content: center; margin-bottom: 30px; }
+        .logo { width: 60px; height: 60px; margin-right: 15px; border-radius: 50%; border: 2px solid var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
+        h1 { margin: 0; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 2px; }
+        .tabs { display: flex; border-bottom: 2px solid #222; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; color: var(--text-med); font-weight: bold; }
+        .tab.active { color: var(--neon-purple); border-bottom: 3px solid var(--neon-purple); }
+        .form-section { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; margin-bottom: 30px; border-left: 4px solid var(--neon-cyan); }
+        input, textarea { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        input:focus { border-color: var(--neon-cyan); outline: none; }
+        .btn { padding: 12px 25px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-add { background-color: var(--neon-cyan); color: black; width: 100%; }
+        .btn-add:hover { background: white; box-shadow: 0 0 15px var(--neon-cyan); }
+        .btn-delete { background-color: #FF3B30; color: white; padding: 5px 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
+        th { color: var(--neon-cyan); text-transform: uppercase; font-size: 0.8rem; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212015037_12.jpg" class="logo" alt="logo">
+        <h1>ADMIN PANEL PREMIUM</h1>
+    </div>
+    <div class="tabs">
+        <div class="tab active" id="tab-p" onclick="showTab('p')">INVENTARIO</div>
+        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
+        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">VER TIENDA 🌐</div>
+    </div>
+    <div id="sec-p">
+        <div class="form-section">
+            <h3>GESTIÓN DE PRODUCTOS</h3>
+            <input type="text" id="name" placeholder="Nombre del Producto">
+            <input type="number" id="price" placeholder="Precio">
+            <input type="text" id="category" placeholder="Categoría (Ej: AirPods, Relojes)">
+            <input type="number" id="stock" placeholder="Stock Inicial">
+            <textarea id="desc" placeholder="Descripción detallada de las características"></textarea>
+            <input type="text" id="img" placeholder="URL de la imagen del producto">
+            <button class="btn btn-add" onclick="save()">REGISTRAR PRODUCTO</button>
+        </div>
+        <table>
+            <thead><tr><th>Producto</th><th>Precio</th><th>Categoría</th><th>Stock</th><th>Acción</th></tr></thead>
+            <tbody id="p-list"></tbody>
+        </table>
+    </div>
+    <div id="sec-o" class="hidden">
+        <table>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Acción</th></tr></thead>
+            <tbody id="o-list"></tbody>
+        </table>
+    </div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+<script>
+    const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function showTab(t) {
+        document.getElementById('sec-p').classList.toggle('hidden', t !== 'p');
+        document.getElementById('sec-o').classList.toggle('hidden', t !== 'o');
+        document.getElementById('tab-p').classList.toggle('active', t === 'p');
+        document.getElementById('tab-o').classList.toggle('active', t === 'o');
+    }
+
+    db.ref("products").on("value", (snap) => {
+        const list = document.getElementById("p-list"); list.innerHTML = "";
+        snap.forEach((child) => {
+            const p = child.val();
+            list.innerHTML += `<tr>
+                <td>${p.name}</td>
+                <td>$${p.price}</td>
+                <td>${p.category || '-'}</td>
+                <td>${p.stock || '0'}</td>
+                <td><button class="btn btn-delete" onclick="if(confirm('¿Eliminar?')) db.ref('products/${child.key}').remove()">X</button></td>
+            </tr>`;
+        });
+    });
+
+    db.ref("orders").on("value", (snap) => {
+        const list = document.getElementById("o-list"); list.innerHTML = "";
+        snap.forEach((child) => {
+            const o = child.val();
+            list.innerHTML += `<tr>
+                <td>${o.username}</td>
+                <td>${o.phone}</td>
+                <td>${o.productName}</td>
+                <td><button class="btn btn-delete" onclick="if(confirm('¿Eliminar?')) db.ref('orders/${child.key}').remove()">X</button></td>
+            </tr>`;
+        });
+    });
+
+    async function save() {
+        const data = {
+            name: document.getElementById("name").value,
+            price: parseFloat(document.getElementById("price").value),
+            category: document.getElementById("category").value,
+            stock: parseInt(document.getElementById("stock").value),
+            description: document.getElementById("desc").value,
+            imageUrl: document.getElementById("img").value
+        };
+        if (!data.name || isNaN(data.price)) return alert("Faltan datos obligatorios");
+        await db.ref("products").push(data);
+        alert("¡Producto guardado!");
+        document.querySelectorAll('input, textarea').forEach(el => el.value = "");
+    }
+</script>
+</body>
+</html>

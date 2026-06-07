@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MODO SISTEMA PREMIUM - Ventas Lobo Store</title>
+    <title>ADMIN PANEL - Ventas Lobo Store</title>
     <style>
         :root {
             --neon-cyan: #00F2FF;
@@ -29,7 +29,6 @@
             padding: 30px;
             border-radius: 20px;
             box-shadow: 0 0 20px rgba(0,242,255,0.1);
-            border: 1px solid rgba(255,255,255,0.05);
         }
 
         .header {
@@ -45,101 +44,49 @@
             margin-right: 15px;
             border-radius: 50%;
             border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 10px var(--neon-cyan);
         }
 
         h1 {
             margin: 0;
             color: var(--neon-cyan);
-            font-weight: 900;
+            text-transform: uppercase;
             letter-spacing: 2px;
-            text-transform: uppercase;
         }
 
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--dark-card);
-            margin-bottom: 20px;
-        }
+        .tabs { display: flex; border-bottom: 2px solid #222; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; color: var(--text-med); }
+        .tab.active { color: var(--neon-purple); border-bottom: 3px solid var(--neon-purple); }
 
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            color: var(--text-med);
-            font-weight: bold;
-        }
-
-        .tab.active {
-            color: var(--neon-purple);
-            border-bottom: 3px solid var(--neon-purple);
-        }
-
-        .form-section {
-            background: rgba(255,255,255,0.02);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border-left: 4px solid var(--neon-cyan);
-        }
-
+        .form-section { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; margin-bottom: 30px; border-left: 4px solid var(--neon-cyan); }
         .form-group { margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px; box-sizing: border-box; }
 
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        input:focus { border-color: var(--neon-cyan); outline: none; }
-
-        .btn {
-            padding: 12px 25px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
+        .btn { padding: 12px 25px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-add { background-color: var(--neon-cyan); color: black; width: 100%; }
-        .btn-add:hover { background-color: white; box-shadow: 0 0 15px var(--neon-cyan); }
-
         .btn-edit { background-color: var(--neon-purple); color: white; padding: 5px 10px; margin-right: 5px; }
         .btn-delete { background-color: #FF3B30; color: white; padding: 5px 10px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
-        th { color: var(--neon-cyan); text-transform: uppercase; font-size: 12px; }
+        th { color: var(--neon-cyan); font-size: 12px; }
 
-        .order-row:hover { background: rgba(188,19,254,0.05); }
-        .status-chip {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            border: 1px solid var(--neon-purple);
-            color: var(--neon-purple);
-        }
+        .status-chip { padding: 4px 10px; border-radius: 20px; font-size: 11px; border: 1px solid var(--neon-purple); color: var(--neon-purple); }
 
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-content">
+<div class="container">
     <div class="header">
-       <a href="https://postimg.cc/JyW9Jt8R" target="_blank"><img src="https://i.postimg.cc/JyW9Jt8R/logo-lobo.png" alt="logo-lobo"></a>
-        <h1>VENTAS LOBO STORE - ADMIN PREMIUM</h1>
+        <img src="https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212004652_3.jpg" alt="logo" class="logo">
+        <h1>ADMIN PANEL PREMIUM</h1>
     </div>
 
     <div class="tabs">
         <div class="tab active" id="tab-products" onclick="showTab('products')">INVENTARIO</div>
         <div class="tab" id="tab-orders" onclick="showTab('orders')">PEDIDOS</div>
-        <div class="tab" onclick="window.open('productos.html', '_blank')">VER CATÁLOGO 🌐</div>
+        <div class="tab" onclick="window.open('../', '_blank')">VER TIENDA 🌐</div>
     </div>
 
     <div id="section-products">
@@ -147,42 +94,27 @@
             <h3 id="form-title">NUEVO PRODUCTO</h3>
             <input type="hidden" id="edit-id">
             <div class="form-group"><input type="text" id="name" placeholder="Nombre del Producto"></div>
-            <div class="form-group"><input type="number" id="price" placeholder="Precio (Créditos)"></div>
-            <div class="form-group"><textarea id="description" placeholder="Descripción Detallada"></textarea></div>
-            <div class="form-group"><input type="text" id="imageUrl" placeholder="URL de Imagen"></div>
-            <button class="btn btn-add" id="btn-save" onclick="saveProduct()">GUARDAR ITEM</button>
-            <button class="btn btn-delete hidden" id="btn-cancel" onclick="resetForm()" style="margin-top:10px; width:100%">CANCELAR EDICIÓN</button>
+            <div class="form-group"><input type="number" id="price" placeholder="Precio"></div>
+            <div class="form-group"><textarea id="description" placeholder="Descripción"></textarea></div>
+            <div class="form-group"><input type="text" id="imageUrl" placeholder="URL Imagen"></div>
+            <button class="btn btn-add" id="btn-save" onclick="saveProduct()">GUARDAR PRODUCTO</button>
+            <button class="btn btn-delete hidden" id="btn-cancel" onclick="resetForm()" style="margin-top:10px; width:100%">CANCELAR</button>
         </div>
 
         <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Producto</th><th>Precio</th><th>Acciones</th></tr></thead>
             <tbody id="product-list"></tbody>
         </table>
     </div>
 
     <div id="section-orders" class="hidden">
         <table>
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Teléfono</th>
-                    <th>Producto</th>
-                    <th>Estado</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
+            <thead><tr><th>Cliente</th><th>Producto</th><th>Estado</th><th>Acción</th></tr></thead>
             <tbody id="order-list"></tbody>
         </table>
     </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
@@ -193,7 +125,6 @@
         projectId: "producto-enventa",
         storageBucket: "producto-enventa.firebasestorage.app",
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
@@ -211,23 +142,15 @@
             list.innerHTML = "";
             snapshot.forEach((child) => {
                 const p = child.val();
-                const productUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}productos.html?id=${child.key}`;
                 list.innerHTML += `<tr>
                     <td>${p.name}</td>
                     <td>$${p.price}</td>
                     <td>
-                        <button class="btn btn-edit" onclick="editProduct('${child.key}', '${p.name}', ${p.price}, '${p.description || ''}', '${p.imageUrl || ''}')">Editar</button>
-                        <button class="btn btn-edit" style="background-color: #25D366" onclick="copyToClipboard('${productUrl}')">Link</button>
-                        <button class="btn btn-delete" onclick="deleteItem('products/${child.key}')">Eliminar</button>
+                        <button class="btn btn-edit" onclick="editProduct('${child.key}', '${p.name}', ${p.price}, '${p.description || ''}', '${p.imageUrl || ''}')">Edit</button>
+                        <button class="btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
                     </td>
                 </tr>`;
             });
-        });
-    }
-
-    function copyToClipboard(text) {
-        navigator.clipboard.writeText(text).then(() => {
-            alert("Link del producto copiado al portapapeles");
         });
     }
 
@@ -237,9 +160,8 @@
             list.innerHTML = "";
             snapshot.forEach((child) => {
                 const o = child.val();
-                list.innerHTML += `<tr class="order-row">
+                list.innerHTML += `<tr>
                     <td>${o.username}</td>
-                    <td>${o.phone}</td>
                     <td>${o.productName}</td>
                     <td><span class="status-chip">${o.status}</span></td>
                     <td><button class="btn btn-delete" onclick="deleteItem('orders/${child.key}')">X</button></td>
@@ -250,22 +172,17 @@
 
     async function saveProduct() {
         const id = document.getElementById("edit-id").value;
-        const name = document.getElementById("name").value;
-        const price = parseFloat(document.getElementById("price").value);
-        const description = document.getElementById("description").value;
-        const imageUrl = document.getElementById("imageUrl").value;
+        const data = {
+            name: document.getElementById("name").value,
+            price: parseFloat(document.getElementById("price").value),
+            description: document.getElementById("description").value,
+            imageUrl: document.getElementById("imageUrl").value
+        };
+        if (!data.name || isNaN(data.price)) return alert("Datos incompletos");
 
-        if(!name || isNaN(price)) return alert("Faltan datos");
-
-        const productData = { name, price, description, imageUrl };
-
-        if (id) {
-            await db.ref("products/" + id).update(productData);
-            alert("Producto actualizado");
-        } else {
-            await db.ref("products").push(productData);
-            alert("Producto guardado");
-        }
+        if (id) await db.ref("products/" + id).update(data);
+        else await db.ref("products").push(data);
+        alert("¡Guardado correctamente!");
         resetForm();
     }
 
@@ -275,11 +192,8 @@
         document.getElementById("price").value = price;
         document.getElementById("description").value = desc;
         document.getElementById("imageUrl").value = img;
-
         document.getElementById("form-title").innerText = "EDITANDO PRODUCTO";
-        document.getElementById("btn-save").innerText = "ACTUALIZAR PRECIO / INFO";
         document.getElementById("btn-cancel").classList.remove("hidden");
-        window.scrollTo(0,0);
     }
 
     function resetForm() {
@@ -288,18 +202,13 @@
         document.getElementById("price").value = "";
         document.getElementById("description").value = "";
         document.getElementById("imageUrl").value = "";
-
         document.getElementById("form-title").innerText = "NUEVO PRODUCTO";
-        document.getElementById("btn-save").innerText = "GUARDAR ITEM";
         document.getElementById("btn-cancel").classList.add("hidden");
     }
 
-    async function deleteItem(path) {
-        if(confirm("¿Estás seguro?")) await db.ref(path).remove();
-    }
+    async function deleteItem(path) { if(confirm("¿Eliminar?")) await db.ref(path).remove(); }
 
     loadProducts();
 </script>
-
 </body>
 </html>

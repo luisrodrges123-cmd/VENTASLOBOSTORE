@@ -1,5 +1,26 @@
 {
   "projects": {
     "default": "producto-enventa"
-  }
+  },
+  "targets": {
+    "producto-enventa": {
+      "hosting": {
+        "tienda": [
+          "NOMBRE_DE_TU_SITIO_PRINCIPAL",
+          "https://producto-enventa-63d4e.firebaseapp.com/"
+        ],
+        "panel-admin": [
+          "NOMBRE_DE_TU_SITIO_ADMIN",
+          "https://producto-enventa.firebaseapp.com/"
+        ],
+        "user-site": [
+          "producto-enventa-63d4e"
+        ],
+        "admin-site": [
+          "producto-enventa"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
