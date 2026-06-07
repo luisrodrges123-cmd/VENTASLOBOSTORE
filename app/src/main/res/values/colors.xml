@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Core Brand Colors (Cyberpunk / Futuristic) -->
+    <color name="neon_cyan">#00F2FF</color>
+    <color name="neon_purple">#BC13FE</color>
+    <color name="deep_space_black">#050505</color>
+    <color name="dark_glass">#1AFFFFFF</color> <!-- Translucent white for Glassmorphism -->
+    <color name="dark_card">#121212</color>
+
+    <!-- Functional Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="text_high_emphasis">#E0E0E0</color>
+    <color name="text_medium_emphasis">#9E9E9E</color>
+
+    <!-- Legacy aliases for compatibility (mapping to new palette) -->
+    <color name="colorPrimary">@color/neon_cyan</color>
+    <color name="colorPrimaryDark">@color/deep_space_black</color>
+    <color name="colorAccent">@color/neon_purple</color>
+    <color name="grey_background">@color/deep_space_black</color>
+</resources>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/deep_space_black"
+    tools:context=".AdminActivity">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/deep_space_black"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:title="SISTEMA PREMIUM"
+            app:titleCentered="true"
+            app:titleTextColor="@color/neon_cyan"
+            android:fontFamily="sans-serif-black" />
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayoutAdmin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/deep_space_black"
+            app:tabIndicatorColor="@color/neon_cyan"
+            app:tabIndicatorHeight="3dp"
+            app:tabSelectedTextColor="@color/neon_cyan"
+            app:tabTextColor="@color/text_medium_emphasis"
+            app:tabRippleColor="@color/dark_glass"
+            app:tabMode="fixed">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="INVENTARIO" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PEDIDOS" />
+
+        </com.google.android.material.tabs.TabLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPagerAdmin"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/btnAddArticle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:text="NUEVO ITEM"
+        android:textColor="@color/black"
+        android:fontFamily="sans-serif-black"
+        app:backgroundTint="@color/neon_cyan"
+        app:icon="@android:drawable/ic_input_add"
+        app:iconTint="@color/black"
+        app:elevation="8dp"
+        app:pressedTranslationZ="12dp" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
