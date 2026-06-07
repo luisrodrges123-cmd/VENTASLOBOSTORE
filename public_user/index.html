@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VENTAS LOBO STORE - Catálogo</title>
+    <title>CATÁLOGO PREMIUM - Ventas Lobo Store</title>
     <style>
         :root {
             --neon-cyan: #00F2FF;
@@ -12,39 +12,267 @@
             --dark-card: #121212;
             --text-high: #E0E0E0;
             --text-med: #9E9E9E;
+            --glass: rgba(255, 255, 255, 0.03);
         }
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-black); color: var(--text-high); margin: 0; padding: 0; }
-        .navbar { padding: 20px; display: flex; align-items: center; justify-content: center; background: rgba(18, 18, 18, 0.9); border-bottom: 1px solid rgba(0, 242, 255, 0.2); position: sticky; top: 0; z-index: 1000; }
-        .navbar img { width: 50px; height: 50px; margin-right: 15px; border-radius: 50%; border: 1px solid var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); }
-        .navbar h1 { margin: 0; font-size: 1.2rem; color: var(--neon-cyan); letter-spacing: 2px; text-transform: uppercase; }
-        .hero { padding: 50px 20px; text-align: center; background: linear-gradient(to bottom, #0a0a0a, var(--bg-black)); }
-        .hero h2 { font-size: 2.5rem; margin-bottom: 10px; background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .container { max-width: 1200px; margin: auto; padding: 20px; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; }
-        .product-card { background: var(--dark-card); border-radius: 15px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.05); transition: 0.3s; display: flex; flex-direction: column; }
-        .product-card:hover { transform: translateY(-5px); border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 242, 255, 0.1); }
-        .product-image { width: 100%; height: 280px; object-fit: cover; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-        .product-info { padding: 20px; flex-grow: 1; display: flex; flex-direction: column; }
-        .product-name { font-size: 1.4rem; font-weight: bold; color: white; margin: 0; }
-        .product-category { font-size: 0.8rem; color: var(--neon-purple); text-transform: uppercase; margin-bottom: 10px; }
-        .product-price { font-size: 1.6rem; color: var(--neon-cyan); font-weight: 900; margin: 10px 0; }
-        .product-desc { font-size: 0.9rem; color: var(--text-med); line-height: 1.5; margin-bottom: 15px; }
-        .product-stock { font-size: 0.85rem; color: #ffcc00; margin-bottom: 20px; font-weight: bold; }
-        .btn-buy { margin-top: auto; display: block; width: 100%; padding: 14px; background: linear-gradient(45deg, #25D366, #128C7E); color: white; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 1rem; }
 
-        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .modal-content { background: var(--dark-card); margin: 10% auto; padding: 30px; border: 1px solid var(--neon-cyan); width: 90%; max-width: 400px; border-radius: 15px; box-shadow: 0 0 30px rgba(0, 242, 255, 0.2); }
-        .modal-header { color: var(--neon-cyan); text-align: center; margin-bottom: 25px; text-transform: uppercase; }
-        input { width: 100%; padding: 12px; background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 15px; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-high);
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at top right, #1a1a1a, #050505);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(0, 242, 255, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar img {
+            width: 50px;
+            height: 50px;
+            margin-right: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--neon-cyan);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 900;
+        }
+
+        .hero {
+            padding: 80px 20px;
+            text-align: center;
+            background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg-black));
+        }
+
+        .hero h2 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .hero p {
+            color: var(--text-med);
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px 20px 80px 20px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background: var(--dark-card);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--neon-cyan);
+            box-shadow: 0 20px 40px rgba(0, 242, 255, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .product-info {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-category {
+            font-size: 0.75rem;
+            color: var(--neon-purple);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .product-name {
+            font-size: 1.5rem;
+            font-weight: 900;
+            color: white;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .product-price {
+            font-size: 1.8rem;
+            color: var(--neon-cyan);
+            font-weight: 900;
+            margin: 15px 0;
+            text-shadow: 0 0 10px rgba(0,242,255,0.3);
+        }
+
+        .product-desc {
+            font-size: 0.95rem;
+            color: var(--text-med);
+            line-height: 1.6;
+            margin-bottom: 20px;
+            height: 75px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+        }
+
+        .product-stock {
+            font-size: 0.85rem;
+            color: #ffcc00;
+            margin-bottom: 25px;
+            background: rgba(255, 204, 0, 0.05);
+            padding: 5px 10px;
+            border-radius: 6px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        .btn-buy {
+            margin-top: auto;
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(45deg, #25D366, #128C7E);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 900;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        .btn-buy:hover {
+            box-shadow: 0 0 20px rgba(37, 211, 102, 0.5);
+            transform: scale(1.02);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-content {
+            background: var(--dark-card);
+            margin: 10% auto;
+            padding: 40px;
+            border: 1px solid var(--neon-cyan);
+            width: 90%;
+            max-width: 450px;
+            border-radius: 24px;
+            box-shadow: 0 0 50px rgba(0, 242, 255, 0.3);
+            text-align: center;
+        }
+
+        .modal-header {
+            color: var(--neon-cyan);
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 1.5rem;
+            font-weight: 900;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            border-color: var(--neon-cyan);
+            outline: none;
+        }
+
+        .loader {
+            text-align: center;
+            padding: 100px;
+            font-size: 1.5rem;
+            color: var(--neon-cyan);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        @media (max-width: 480px) {
+            .hero h2 { font-size: 2rem; }
+        }
     </style>
 </head>
 <body>
+
 <div class="navbar">
-    <img src="https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212015037_12.jpg" alt="Logo">
+    <a href="https://postimg.cc/JyW9Jt8R" target="_blank"><img src="https://i.postimg.cc/JyW9Jt8R/logo-lobo.png" alt="logo-lobo"></a>
     <h1>VENTAS LOBO STORE</h1>
 </div>
-<div class="hero"><h2>Catálogo de Productos</h2><p>Calidad Premium y exclusividad 🐺</p></div>
-<div class="container"><div id="loader" style="text-align:center; padding: 50px; font-size: 1.2rem; color: var(--neon-cyan)">Cargando productos exclusivos...</div><div id="product-grid" class="product-grid"></div></div>
+
+<div class="hero">
+    <h2>Catálogo Exclusivo</h2>
+    <p>Tecnología Premium seleccionada para ti 🐺</p>
+</div>
+
+<div class="container">
+    <div id="loader" class="loader">Sincronizando Inventario...</div>
+    <div id="product-grid" class="product-grid"></div>
+</div>
 
 <div id="orderModal" class="modal">
     <div class="modal-content">
@@ -52,7 +280,7 @@
         <input type="text" id="custName" placeholder="Tu Nombre Completo">
         <input type="tel" id="custPhone" placeholder="Tu Número de WhatsApp">
         <button class="btn-buy" onclick="finalizeOrder()">FINALIZAR POR WHATSAPP</button>
-        <button onclick="document.getElementById('orderModal').style.display='none'" style="background:none; border:none; color:grey; width:100%; margin-top:15px; cursor:pointer">Volver al catálogo</button>
+        <button onclick="document.getElementById('orderModal').style.display='none'" style="background:none; border:none; color:var(--text-med); width:100%; margin-top:20px; cursor:pointer; font-weight:bold">VOLVER ATRÁS</button>
     </div>
 </div>
 
@@ -66,22 +294,29 @@
 
     db.ref("products").on("value", (snap) => {
         document.getElementById("loader").style.display = "none";
-        const grid = document.getElementById("product-grid"); grid.innerHTML = "";
+        const grid = document.getElementById("product-grid");
+        grid.innerHTML = "";
+
+        if (!snap.exists()) {
+            grid.innerHTML = "<p style='text-align:center; grid-column: 1/-1;'>Inventario vacío por el momento.</p>";
+            return;
+        }
+
         snap.forEach((child) => {
             const p = child.val();
             const productCard = document.createElement("div");
             productCard.className = "product-card";
-            const imgUrl = p.imageUrl || "https://via.placeholder.com/300x280?text=Sin+Imagen";
+            const imgUrl = p.imageUrl || "https://via.placeholder.com/400x300?text=Premium+Item";
 
             productCard.innerHTML = `
                 <img src="${imgUrl}" alt="${p.name}" class="product-image">
                 <div class="product-info">
-                    <span class="product-category">${p.category || 'General'}</span>
+                    <span class="product-category">${p.category || 'EXCLUSIVO'}</span>
                     <h3 class="product-name">${p.name}</h3>
                     <div class="product-price">$${p.price}</div>
                     <p class="product-desc">${p.description || 'Sin descripción detallada disponible.'}</p>
-                    <div class="product-stock">Stock: ${p.stock || 'Consultar'} unidades</div>
-                    <button class="btn-buy" onclick="openModal('${p.name}', ${p.price}, '${imgUrl}')">ORDENAR AHORA</button>
+                    <div class="product-stock">Stock Disponible: ${p.stock || 'Consultar'}</div>
+                    <button class="btn-buy" onclick="openModal('${p.name}', ${p.price}, '${imgUrl}')">LO QUIERO</button>
                 </div>
             `;
             grid.appendChild(productCard);
@@ -96,10 +331,11 @@
     async function finalizeOrder() {
         const n = document.getElementById("custName").value;
         const p = document.getElementById("custPhone").value;
-        if (!n || !p) return alert("Por favor, ingresa tu nombre.");
+        if (!n || !p) return alert("Por favor, ingresa tus datos para procesar el pedido.");
 
         await db.ref("orders").push({ ...selectedProd, username: n, phone: p, status: "PENDIENTE", timestamp: Date.now() });
-        const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, quiero mi pedido.`;
+
+        const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, acabo de ver este producto en la web y me interesa comprarlo.`;
         window.open(`https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}`, '_blank');
         document.getElementById("orderModal").style.display = "none";
     }

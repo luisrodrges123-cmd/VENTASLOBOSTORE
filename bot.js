@@ -10,8 +10,9 @@ const { Boom } = require('@hapi/boom');
 const qrcode = require('qrcode-terminal');
 const pino = require('pino');
 
-// 🐺 CONFIGURACIÓN LOGO
-const LOGO_LOBO = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212015037_12.jpg';
+// 🐺 CONFIGURACIÓN LOGO (Logo Principal Oficial)
+const LOGO_LOBO = 'https://i.postimg.cc/JyW9Jt8R/logo-lobo.png';
+const LOGO_PATH = path.join(__dirname, 'app/src/main/res/drawable/ic_store_logo.png');
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
@@ -80,7 +81,6 @@ async function connectToWhatsApp() {
 
         // 1. DETECTAR PEDIDO DESDE LA WEB
         if (text.includes('NUEVO PEDIDO - LOBO STORE')) {
-            // Extraer nombre del cliente si es posible
             const lines = text.split('\n');
             let cliente = "Cliente";
             for (let line of lines) {
@@ -91,7 +91,7 @@ async function connectToWhatsApp() {
             }
 
             await sock.sendMessage(from, {
-                image: { url: LOGO_LOBO },
+                image: { url: LOGO_PATH },
                 caption: `👋 ¡Hola *${cliente}*! 🐺
 
 Bienvenido a *VENTAS LOBO STORE*.
@@ -108,7 +108,7 @@ Si tienes alguna duda adicional, puedes escribirla aquí mismo.`
         // 2. MENÚ PRINCIPAL (Activadores manuales)
         if (mensaje === 'hola' || mensaje === 'menu' || mensaje === 'menú' || mensaje === 'lobo') {
             await sock.sendMessage(from, {
-                image: { url: LOGO_LOBO },
+                image: { url: LOGO_PATH },
                 caption: `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺
 
 ¡Hola! Soy el asistente oficial de la tienda. ¿Cómo puedo ayudarte?
