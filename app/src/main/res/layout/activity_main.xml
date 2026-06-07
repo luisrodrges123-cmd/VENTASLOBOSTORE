@@ -19,10 +19,32 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:titleCentered="true"
-            app:logo="@drawable/ic_store_logo"
-            app:titleTextColor="@color/neon_cyan"
-            app:logoDescription="@string/store_logo_description">
+            app:titleCentered="true">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_gravity="center">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_store_logo"
+                    android:contentDescription="@string/store_logo_description" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:fontFamily="sans-serif-black"
+                    android:letterSpacing="0.2"
+                    android:text="@string/app_name"
+                    android:textColor="@color/neon_cyan"
+                    android:textSize="14sp"
+                    android:textAllCaps="true" />
+            </LinearLayout>
         </com.google.android.material.appbar.MaterialToolbar>
     </com.google.android.material.appbar.AppBarLayout>
 
