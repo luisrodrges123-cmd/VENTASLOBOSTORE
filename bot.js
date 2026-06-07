@@ -1,99 +1,90 @@
-const AIRPODS_IMG = 'https://i.postimg.cc/28Fd2m6L/Chat-GPT-Image-6-jun-2026-05-13-46-p-m.png';
-const CARGADOR_IMG = 'https://i.postimg.cc/d0WZR7NK/Chat-GPT-Image-7-jun-2026-12-06-25-p-m.png';
+// 🐺 BOT LOBO STORE - DINÁMICO CON FIREBASE
+const LOGO_LOBO = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212015037_12.jpg';
+
+/*
+  NOTA: Para que este bot sea dinámico, se requiere instalar firebase-admin:
+  npm install firebase-admin
+*/
+
+// Simulación de conexión a Firebase (Configura tus credenciales aquí)
+// const admin = require('firebase-admin');
+// const db = admin.database();
 
 sock.ev.on('messages.upsert', async ({ messages }) => {
   const msg = messages[0];
-
   if (!msg.message || msg.key.fromMe) return;
 
   const from = msg.key.remoteJid;
-
-  const text =
-    msg.message.conversation ||
-    msg.message.extendedTextMessage?.text ||
-    '';
-
+  const text = msg.message.conversation || msg.message.extendedTextMessage?.text || '';
   const mensaje = text.toLowerCase().trim();
 
-  if (
-    mensaje === 'hola' ||
-    mensaje === 'menu' ||
-    mensaje === 'menú'
-  ) {
+  // --- MENÚ PRINCIPAL ---
+  if (mensaje === 'hola' || mensaje === 'menu' || mensaje === 'menú') {
     await sock.sendMessage(from, {
-      text: `🐺 *LOBO STORE*
+      image: { url: LOGO_LOBO },
+      caption: `🐺 *BIENVENIDO A VENTAS LOBO STORE* 🐺
 
-¡Bienvenido!
+¡Hola! Soy tu asistente virtual. ¿En qué puedo ayudarte hoy?
 
-1️⃣ AirPods Pro
-2️⃣ Cargador iPhone 20W
-3️⃣ Horarios
-4️⃣ Hablar con asesor
+1️⃣ *Ver Catálogo Completo* 📦
+2️⃣ *Promociones del día* 🔥
+3️⃣ *Horarios y Ubicación* 🕒
+4️⃣ *Hablar con un asesor* 👨‍💼
 
-Responde con el número de la opción.`
+Para ver nuestra tienda online entra aquí:
+https://producto-enventa-63d4e.firebaseapp.com/
+
+Responde con el número de tu opción.`
     });
   }
 
-  if (mensaje === '1' || mensaje.includes('airpods')) {
+  // --- OPCIÓN 1: CATÁLOGO (Ejemplo dinámico) ---
+  if (mensaje === '1' || mensaje.includes('catálogo')) {
+    // Aquí podrías hacer: const products = (await db.ref('products').once('value')).val();
     await sock.sendMessage(from, {
-      image: { url: AIRPODS_IMG },
-      caption: `🎧 *AirPods Pro*
+      text: `🚀 *NUESTRO CATÁLOGO ACTUAL* 🚀
 
-✅ Cancelación de ruido
-✅ Audio espacial
-✅ Estuche MagSafe
-✅ Sonido premium
+Tenemos lo mejor en tecnología:
+✅ AirPods Pro (Cancelación de ruido)
+✅ Cargadores iPhone 20W (Carga Rápida)
+✅ Y mucho más...
 
-📝 Si deseas comprar, responde:
-
-REGISTRAR`
+*¿Quieres ver un producto en específico?*
+Responde con el nombre del producto o visita nuestra web.`
     });
   }
 
-  if (mensaje === '2' || mensaje.includes('cargador')) {
+  // --- REGISTRO ---
+  if (mensaje === 'registrar' || mensaje === 'comprar') {
     await sock.sendMessage(from, {
-      image: { url: CARGADOR_IMG },
-      caption: `⚡ *Cargador iPhone 20W*
+      text: `📝 *PROCESO DE PEDIDO*
 
-✅ Carga rápida
-✅ Cable USB-C a Lightning
-✅ Alta calidad
+Para agendar tu pedido, por favor envíanos:
+1. *Nombre Completo:*
+2. *Producto de interés:*
+3. *Ciudad:*
 
-📝 Si deseas comprar, responde:
-
-REGISTRAR`
+En breve un asesor confirmará tu pedido. 🐺`
     });
   }
 
-  if (mensaje === 'registrar') {
-    await sock.sendMessage(from, {
-      text: `📝 *Registro de Cliente*
-
-Por favor envía:
-
-Nombre completo:
-Ciudad:
-
-Ejemplo:
-Juan Pérez
-Los Mochis`
-    });
-  }
-
+  // --- HORARIOS ---
   if (mensaje === '3') {
     await sock.sendMessage(from, {
-      text: `🕒 *Horario de Atención*
+      text: `🕒 *HORARIOS DE ATENCIÓN*
 
-Lunes a Sábado
-9:00 AM a 7:00 PM`
+📍 *Ubicación:* Los Mochis, Sinaloa.
+📅 *Lunes a Sábado:* 9:00 AM - 7:00 PM
+🚀 *Entregas:* Inmediatas en punto medio o a domicilio.`
     });
   }
 
-  if (mensaje === '4') {
+  // --- ASESOR ---
+  if (mensaje === '4' || mensaje.includes('asesor')) {
     await sock.sendMessage(from, {
-      text: `👨‍💼 Un asesor te atenderá en breve.
+      text: `👨‍💼 *Conectando con Asesor...*
 
-Gracias por contactar a LOBO STORE 🐺`
+He avisado al equipo de *LOBO STORE*. Te responderemos en unos minutos. ¡Gracias por tu paciencia! 🐺`
     });
   }
 });
