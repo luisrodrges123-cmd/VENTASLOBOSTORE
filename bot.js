@@ -16,15 +16,19 @@ const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.fir
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🐺 CONFIGURACIÓN BOT MODO PREMIUM (Logo Estable)
-const LOGO_PREMIUM = 'https://i.postimg.cc/JyW9Jt8R/logo-lobo.png';
+// 🐺 CONFIGURACIÓN BOT MODO PREMIUM (Nuevo Logo Metálico)
+const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212030616_14.jpg';
 const ADMIN_NUMBER = '5216682515249@s.whatsapp.net';
 
 const sessions = {};
 
-const getRealNumber = (jid) => {
-    if (!jid) return 'Desconocido';
-    return jidNormalizedUser(jid).split('@')[0];
+// Funciones de utilidad
+const getRealNumber = (jid) => jidNormalizedUser(jid).split('@')[0];
+
+const extractPhoneNumber = (text) => {
+    const cleaned = text.replace(/\D/g, '');
+    if (cleaned.length >= 10) return cleaned;
+    return null;
 };
 
 async function connectToWhatsApp() {
@@ -64,61 +68,75 @@ async function connectToWhatsApp() {
         const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
         const mensaje = text.toLowerCase();
 
-        // --- REGISTRO DE USUARIO ---
+        // --- REGISTRO AUTOMÁTICO ---
         try {
             update(ref(db, 'bot_users/' + userNumber), {
                 pushName: pushName,
                 number: userNumber,
-                lastSeen: Date.now(),
-                status: "Activo"
+                lastSeen: Date.now()
             });
         } catch (e) {}
 
-        // --- FLUJO ASESORÍA ---
+        // --- DETECCIÓN INTELIGENTE DE DATOS ---
         if (sessions[from] === 'waiting_contact_info') {
+            const detectedNumber = extractPhoneNumber(text);
+
+            if (!detectedNumber) {
+                await sock.sendMessage(from, { text: `❌ No he podido reconocer un número de teléfono válido. Por favor, envía tu número a 10 dígitos (ej: 6681234567).` });
+                return;
+            }
+
             delete sessions[from];
-            await sock.sendMessage(from, { text: `✅ ¡Recibido! He pasado tus datos directamente al Administrador. Te contactaremos pronto. 🐺` });
+            await sock.sendMessage(from, { text: `✅ ¡Perfecto! He detectado el número: *${detectedNumber}*. El Administrador de *LOBO STORE* te contactará de inmediato. 🐺` });
+
+            // Aviso al Admin con el número DETECTADO
             await sock.sendMessage(ADMIN_NUMBER, {
-                text: `🐺 *NUEVO CLIENTE SOLICITA ATENCIÓN*\n\n*Datos:* \n${text}\n\n*WhatsApp del Usuario:* \nwa.me/${userNumber}`
+                text: `🐺 *NUEVA SOLICITUD DE ASESORÍA*\n\n*Usuario:* ${pushName}\n*Número proporcionado:* ${detectedNumber}\n*WhatsApp de origen:* wa.me/${userNumber}\n\n*Mensaje completo:* \n${text}`
             });
+
             try {
                 const newRef = push(ref(db, 'talk_requests'));
-                await update(newRef, { name: pushName, datos_cliente: text, number: userNumber, timestamp: Date.now() });
+                await update(newRef, {
+                    name: pushName,
+                    numero_detectado: detectedNumber,
+                    mensaje_original: text,
+                    number: userNumber,
+                    timestamp: Date.now()
+                });
             } catch (e) {}
             return;
         }
 
-        // --- FUNCION AUXILIAR PARA ENVIAR IMAGEN SEGURA ---
-        const sendLoboImage = async (jid, caption) => {
+        // --- FUNCIÓN PARA ENVIAR IMAGEN PREMIUM ---
+        const sendPremiumImage = async (jid, caption) => {
             try {
                 await sock.sendMessage(jid, { image: { url: LOGO_PREMIUM }, caption });
             } catch (err) {
-                console.log("Error enviando imagen, enviando solo texto...");
                 await sock.sendMessage(jid, { text: caption });
             }
         };
 
-        // --- RESPUESTAS ---
+        // --- COMANDOS ---
         if (text.includes('NUEVO PEDIDO - LOBO STORE')) {
-            await sendLoboImage(from, `👋 ¡Hola ${pushName}! 🐺\n\nHe recibido los detalles de tu pedido. Un asesor lo revisará de inmediato.\n\n✅ *Registrado en sistema Modo Premium.*`);
+            await sendPremiumImage(from, `👋 ¡Hola ${pushName}! 🐺\n\nHe recibido tu pedido con éxito. Un asesor lo revisará en este momento.\n\n✅ *Registrado en sistema Modo Premium.*`);
             return;
         }
 
         if (mensaje === 'hola' || mensaje === 'menu' || mensaje === 'lobo' || mensaje === 'menú') {
-            await sendLoboImage(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${pushName}*, bienvenido a nuestra atención Premium. ¿En qué podemos ayudarte?\n\n1️⃣ *Ver Catálogo Premium* 📦\n2️⃣ *Promociones del Mes* 🔥\n3️⃣ *Horarios y Entregas* 🕒\n4️⃣ *Hablar con Administrador* 👨‍💼\n\n🌐 *Tienda Online:* \nhttps://producto-enventa-63d4e.firebaseapp.com/`);
+            await sendPremiumImage(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${pushName}*, bienvenido a nuestra atención de lujo. ¿En qué podemos ayudarte?\n\n1️⃣ *Ver Catálogo Premium* 📦\n2️⃣ *Promociones del Mes* 🔥\n3️⃣ *Horarios y Entregas* 🕒\n4️⃣ *Hablar con Administrador* 👨‍💼\n\n🌐 *Tienda Online:* \nhttps://producto-enventa-63d4e.firebaseapp.com/`);
             return;
         }
 
         if (mensaje === '4') {
             sessions[from] = 'waiting_contact_info';
-            await sock.sendMessage(from, { text: `👨‍💼 *CONTACTO PERSONALIZADO*\n\nPor favor, escribe tu *Nombre Completo* y el *Número de Teléfono* donde deseas que te contactemos.` });
+            await sock.sendMessage(from, { text: `👨‍💼 *CONTACTO PERSONALIZADO*\n\nPor favor, escribe tu *Nombre Completo* y tu *Número de Teléfono* para que el administrador te contacte directamente.` });
             return;
         }
 
         if (mensaje === '1') {
-            await sock.sendMessage(from, { text: `🚀 Entra aquí para ver el inventario actualizado:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
+            await sock.sendMessage(from, { text: `🚀 Explora nuestro inventario en tiempo real aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
         }
     });
 }
 
-connectToWhatsApp().catch(err => console.log("Error critico: " + err));
+connectToWhatsApp().catch(err => console.log("Error: " + err));
