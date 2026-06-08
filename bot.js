@@ -16,7 +16,7 @@ const fs = require('fs');
 const path = require('path');
 
 // --- CONFIGURACIÓN GLOBAL ---
-const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212061404_28.jpg';
+const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212061917_29.jpg';
 const ADMIN_NUMBER = '5216682515249@s.whatsapp.net';
 const AUTH_PATH = 'auth_info_baileys';
 let lastQR = null;
