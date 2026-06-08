@@ -3,160 +3,288 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTRO DE CONTROL - Lobo Store</title>
+    <title>SISTEMA PROFESIONAL - Lobo Store</title>
     <style>
-        :root { --cyan: #00F2FF; --purple: #BC13FE; --bg: #050505; --card: #121212; --text: #E0E0E0; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: auto; background: var(--card); padding: 40px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        :root {
+            --neon-cyan: #00F2FF;
+            --neon-purple: #BC13FE;
+            --bg-black: #050505;
+            --dark-card: #121212;
+            --text-high: #E0E0E0;
+            --text-med: #9E9E9E;
+            --glass: rgba(255, 255, 255, 0.03);
+            --success: #25D366;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-black);
+            color: var(--text-high);
+            margin: 0; padding: 20px;
+            background: radial-gradient(circle at top right, #1a1a1a, #050505);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px; margin: auto;
+            background: var(--dark-card); padding: 40px;
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+        }
+
         .header { text-align: center; margin-bottom: 40px; }
-        .logo { width: 120px; height: 120px; border-radius: 20px; border: 2px solid var(--cyan); box-shadow: 0 0 20px var(--cyan); margin-bottom: 15px; }
-        .tabs { display: flex; gap: 10px; background: rgba(255,255,255,0.03); padding: 5px; border-radius: 12px; margin-bottom: 30px; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: #999; font-weight: bold; border-radius: 10px; transition: 0.3s; text-transform: uppercase; }
-        .tab.active { background: var(--purple); color: white; box-shadow: 0 0 15px var(--purple); }
-        .form-section { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 20px; margin-bottom: 40px; }
-        input, textarea { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
-        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.8rem; }
-        .btn-edit { background: var(--cyan); color: black; }
+        .logo { width: 140px; height: 140px; border-radius: 25px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); margin-bottom: 20px; transition: 0.5s; }
+
+        .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; }
+        .tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 20px var(--neon-purple); }
+
+        .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
+        .form-section h3 { margin-top: 0; margin-bottom: 20px; color: var(--neon-cyan); font-size: 1.1rem; text-transform: uppercase; }
+
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 15px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 0.9rem; transition: 0.3s; }
+        input:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 10px rgba(0,242,255,0.2); }
+
+        .btn-main { width: 100%; padding: 16px; background: var(--neon-cyan); color: black; border: none; border-radius: 12px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.3s; letter-spacing: 1px; }
+        .btn-main:hover { background: white; box-shadow: 0 0 20px var(--neon-cyan); transform: translateY(-2px); }
+
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; }
+        td { padding: 20px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255,255,255,0.05); }
+        tr td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255,255,255,0.05); }
+
+        .action-group { display: flex; gap: 10px; }
+        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; }
+        .btn-edit { background: var(--neon-purple); color: white; }
         .btn-delete { background: #FF3B30; color: white; }
-        .btn-wa { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 8px 12px; border-radius: 6px; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
-        th { text-align: left; color: var(--cyan); padding: 15px; font-size: 0.75rem; text-transform: uppercase; }
-        td { padding: 15px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #222; }
+        .btn-wa { background: var(--success); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
+        .badge-cyan { background: rgba(0, 242, 255, 0.1); color: var(--neon-cyan); }
+        .badge-purple { background: rgba(188, 19, 254, 0.1); color: var(--neon-purple); }
+
         .hidden { display: none; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div class="header">
-        <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" class="logo">
-        <h1 style="color:var(--cyan); letter-spacing: 5px;">CENTRO DE CONTROL LOBO STORE</h1>
+        <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" class="logo" alt="Lobo Store">
+        <h1 style="color:var(--neon-cyan)">SISTEMA DE GESTIÓN PROFESIONAL</h1>
     </div>
 
     <div class="tabs">
-        <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
-        <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
-        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
-        <div class="tab" id="tab-c" onclick="showTab('c')">CONFIG BOT ⚙️</div>
+        <div class="tab active" id="tab-p" onclick="showTab('p')">Inventario</div>
+        <div class="tab" id="tab-u" onclick="showTab('u')">Base de Datos 👥</div>
+        <div class="tab" id="tab-m" onclick="showTab('m')">Solicitudes 💬</div>
+        <div class="tab" id="tab-c" onclick="showTab('c')">Sistema ⚙️</div>
     </div>
 
-    <!-- SECCIÓN PRODUCTOS -->
+    <!-- PRODUCTOS -->
     <div id="sec-p">
         <div class="form-section">
-            <h3 style="color:var(--cyan)">NUEVO PRODUCTO</h3>
+            <h3 id="p-form-title">Control de Artículos</h3>
             <input type="hidden" id="p-id">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-                <input type="text" id="p-name" placeholder="Nombre">
-                <input type="number" id="p-price" placeholder="Precio">
+            <div class="input-grid">
+                <input type="text" id="p-name" placeholder="Nombre Comercial">
+                <input type="number" id="p-price" placeholder="Precio de Venta ($)">
+                <input type="text" id="p-category" placeholder="Categoría / Marca">
+                <input type="number" id="p-stock" placeholder="Stock Actual">
+                <input type="text" id="p-img" placeholder="Enlace de la Imagen">
             </div>
-            <button class="action-btn btn-edit" style="width:100%" onclick="saveProduct()">GUARDAR</button>
+            <textarea id="p-desc" placeholder="Características y detalles técnicos..." style="height: 80px; margin-bottom: 20px;"></textarea>
+            <button class="btn-main" onclick="saveProduct()">GUARDAR ARTÍCULO PREMIUM</button>
         </div>
-        <table id="p-table"><thead><tr><th>Producto</th><th>Precio</th><th>Acción</th></tr></thead><tbody id="p-list"></tbody></table>
+        <table>
+            <thead><tr><th>Artículo</th><th>Precio</th><th>Categoría</th><th>Existencia</th><th>Acción</th></tr></thead>
+            <tbody id="p-list-body"></tbody>
+        </table>
     </div>
 
-    <!-- SECCIÓN USUARIOS -->
+    <!-- USUARIOS -->
     <div id="sec-u" class="hidden">
         <div class="form-section">
-            <h3 id="u-title" style="color:var(--cyan)">EDITAR CLIENTE</h3>
+            <h3 id="u-form-title">Ficha de Cliente</h3>
             <input type="hidden" id="u-key">
-            <input type="hidden" id="u-old-phone">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-                <input type="text" id="u-name" placeholder="Nombre Personalizado">
-                <input type="number" id="u-phone" placeholder="Número de Contacto">
+            <div class="input-grid">
+                <input type="text" id="u-name" placeholder="Nombre Asignado">
+                <input type="number" id="u-phone" placeholder="Número de Contacto Profesional">
             </div>
-            <button class="action-btn btn-edit" style="width:100%" onclick="saveUser()">ACTUALIZAR FICHA</button>
+            <button class="btn-main" onclick="saveUser()">ACTUALIZAR DATOS DE CLIENTE</button>
+            <button class="btn-main" style="background:#333; color:white; margin-top:10px" onclick="resetUserForm()">CANCELAR / LIMPIAR</button>
         </div>
-        <table><thead><tr><th>Cliente</th><th>Número</th><th>WhatsApp ID</th><th>Acción</th></tr></thead><tbody id="u-list"></tbody></table>
+        <table>
+            <thead><tr><th>Identidad</th><th>Contacto Directo</th><th>ID WhatsApp</th><th>Acciones</th></tr></thead>
+            <tbody id="u-list-body"></tbody>
+        </table>
     </div>
 
-    <!-- SECCIÓN MENSAJES -->
+    <!-- SOLICITUDES -->
     <div id="sec-m" class="hidden">
-        <h3 style="color:var(--cyan)">SOLICITUDES DE ASESORÍA</h3>
-        <table><thead><tr><th>Fecha</th><th>Usuario</th><th>Número</th><th>Acción</th></tr></thead><tbody id="m-list"></tbody></table>
+        <h3 style="color:var(--neon-cyan)">REGISTRO DE ASESORÍAS</h3>
+        <table>
+            <thead><tr><th>Fecha / Hora</th><th>Nombre</th><th>Número Solicitado</th><th>Operación</th></tr></thead>
+            <tbody id="m-list-body"></tbody>
+        </table>
     </div>
 
-    <!-- SECCIÓN CONFIG BOT -->
+    <!-- CONFIG -->
     <div id="sec-c" class="hidden" style="text-align:center">
-        <button class="action-btn btn-delete" style="width:100%; padding:20px" onclick="resetBot()">🔥 CERRAR SESIÓN BOT (LOGOUT)</button>
+        <div class="form-section">
+            <h2 style="color:#FF3B30">ZONA CRÍTICA</h2>
+            <p style="margin-bottom:30px">Use esta opción solo si el bot presenta fallas técnicas o desea cambiar de dispositivo.</p>
+            <button class="btn-main" style="background: #FF3B30; color:white" onclick="resetBotSession()">REINICIAR SESIÓN GLOBAL (LOGOUT)</button>
+        </div>
     </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
 <script>
     const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let products = {}; let users = {};
+
+    let productsCache = {}; let usersCache = {};
 
     function showTab(t) {
-        ['p','u','m','c'].forEach(s => { document.getElementById('sec-'+s).classList.add('hidden'); document.getElementById('tab-'+s).classList.remove('active'); });
-        document.getElementById('sec-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('active');
+        ['p','u','m','c'].forEach(s => {
+            document.getElementById('sec-'+s).classList.add('hidden');
+            document.getElementById('tab-'+s).classList.remove('active');
+        });
+        document.getElementById('sec-'+t).classList.remove('hidden');
+        document.getElementById('tab-'+t).classList.add('active');
     }
 
-    // PRODUCTOS
-    db.ref("products").on("value", snap => {
-        const list = document.getElementById("p-list"); list.innerHTML = "";
-        snap.forEach(child => {
-            const p = child.val(); products[child.key] = p;
-            list.innerHTML += `<tr><td>${p.name}</td><td>$${p.price}</td><td><button class='action-btn btn-edit' onclick='prepareProductEdit("${child.key}")'>E</button></td></tr>`;
-        });
-    });
-
-    // USUARIOS
-    db.ref("bot_users").on("value", snap => {
-        const list = document.getElementById("u-list"); list.innerHTML = "";
-        users = {};
-        snap.forEach(child => {
-            const u = child.val(); const key = child.key; users[key] = u;
-            const contactNum = u.number || u.phone || '-';
-            const waLink = `https://wa.me/${contactNum.toString().replace(/\D/g,'')}`;
-
+    // --- PRODUCTOS ---
+    db.ref("products").on("value", (snap) => {
+        const list = document.getElementById("p-list-body"); list.innerHTML = "";
+        productsCache = {};
+        snap.forEach((child) => {
+            const p = child.val(); productsCache[child.key] = p;
             list.innerHTML += `<tr>
-                <td><strong>${u.name || u.whatsapp_name || 'Nuevo'}</strong></td>
-                <td>${contactNum}</td>
-                <td><small style="color:grey">${key}</small></td>
-                <td>
-                    <button class='action-btn btn-edit' onclick='prepareUser("${key}")'>EDITAR</button>
-                    <a href="${waLink}" class='btn-wa' target="_blank">WA</a>
+                <td><strong>${p.name}</strong></td>
+                <td><span class="badge badge-cyan">$${p.price}</span></td>
+                <td>${p.category || '-'}</td>
+                <td>${p.stock || 0} u.</td>
+                <td class="action-group">
+                    <button class="action-btn btn-edit" onclick="prepareProductEdit('${child.key}')">Editar</button>
+                    <button class="action-btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
                 </td>
             </tr>`;
         });
     });
 
-    // MENSAJES
-    db.ref("talk_requests").on("value", snap => {
-        const list = document.getElementById("m-list"); list.innerHTML = "";
-        snap.forEach(child => {
-            const m = child.val(); const date = new Date(m.timestamp).toLocaleString();
-            const contactNum = m.number || m.whatsapp_id || '-';
-            list.innerHTML += `<tr><td>${date}</td><td>${m.name}</td><td>${contactNum}</td><td>
-                <a href="https://wa.me/${contactNum.toString().replace(/\D/g,'')}" class="btn-wa" target="_blank">HABLAR</a>
-                <button class="action-btn btn-delete" onclick="db.ref('talk_requests/${child.key}').remove()">X</button>
-            </td></tr>`;
+    async function saveProduct() {
+        const id = document.getElementById("p-id").value;
+        const data = {
+            name: document.getElementById("p-name").value.trim(),
+            price: parseFloat(document.getElementById("p-price").value) || 0,
+            category: document.getElementById("p-category").value.trim(),
+            stock: parseInt(document.getElementById("p-stock").value) || 0,
+            description: document.getElementById("p-desc").value.trim(),
+            imageUrl: document.getElementById("p-img").value.trim()
+        };
+        if(!data.name) return alert("Ingrese el nombre");
+        if(id) await db.ref("products/" + id).set(data);
+        else await db.ref("products").push(data);
+        alert("Sincronizado"); resetProductForm();
+    }
+
+    function prepareProductEdit(id) {
+        const p = productsCache[id];
+        document.getElementById("p-id").value = id;
+        document.getElementById("p-name").value = p.name;
+        document.getElementById("p-price").value = p.price;
+        document.getElementById("p-category").value = p.category || "";
+        document.getElementById("p-stock").value = p.stock || 0;
+        document.getElementById("p-desc").value = p.description || "";
+        document.getElementById("p-img").value = p.imageUrl || "";
+        document.getElementById("p-form-title").innerText = "MODIFICANDO: " + p.name;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetProductForm() { document.getElementById("p-id").value = ""; document.querySelectorAll('#sec-p input, #sec-p textarea').forEach(i => i.value = ""); document.getElementById("p-form-title").innerText = "Control de Artículos"; }
+
+    // --- USUARIOS PROFESIONAL ---
+    db.ref("bot_users").on("value", (snap) => {
+        const list = document.getElementById("u-list-body"); list.innerHTML = "";
+        usersCache = {};
+        snap.forEach((child) => {
+            const u = child.val(); const key = child.key; usersCache[key] = u;
+            // El número profesional es el que el admin edita. Si no existe, usamos el de WA o informamos que es un LID.
+            const contactNum = u.number || u.phone || "";
+            const isLid = key.length > 13;
+
+            // Generamos el link prioritario: 1. Numero editado, 2. Si el key NO es LID, usar el key.
+            let linkNum = contactNum.replace(/\D/g,'');
+            if(!linkNum && !isLid) linkNum = key.replace(/\D/g,'');
+
+            const waLink = linkNum ? `https://wa.me/${linkNum}` : "#";
+
+            list.innerHTML += `<tr>
+                <td><strong>${u.name || u.whatsapp_name || 'Sin Nombre'}</strong></td>
+                <td><span style="color:var(--neon-cyan)">${contactNum || 'N/A'}</span></td>
+                <td><small style="color:grey">${isLid ? 'ID EMPRESARIAL' : key}</small></td>
+                <td class="action-group">
+                    <button class="action-btn btn-edit" onclick="prepareUserEdit('${key}')">EDITAR</button>
+                    ${linkNum ? `<a href="${waLink}" class="action-btn btn-wa" target="_blank">CHAT</a>` : ''}
+                </td>
+            </tr>`;
         });
     });
 
-    function prepareUser(key) {
-        const u = users[key];
+    function prepareUserEdit(key) {
+        const u = usersCache[key];
         document.getElementById("u-key").value = key;
-        document.getElementById("u-old-phone").value = u.number || u.phone || "";
         document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
         document.getElementById("u-phone").value = u.number || u.phone || "";
-        document.getElementById("u-title").innerText = "MODIFICANDO: " + (u.name || u.whatsapp_name);
-        window.scrollTo({top: 0, behavior: 'smooth'});
+        document.getElementById("u-form-title").innerText = "EDITAR CLIENTE: " + (u.name || u.whatsapp_name);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function saveUser() {
         const key = document.getElementById("u-key").value;
-        const nN = document.getElementById("u-name").value; const nP = document.getElementById("u-phone").value;
-        if(!key) return alert("Selecciona un usuario");
-        await db.ref("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
-        alert("¡Datos y Link sincronizados!");
+        const newName = document.getElementById("u-name").value.trim();
+        const newPhone = document.getElementById("u-phone").value.trim();
+        if(!key) return alert("Seleccione un usuario");
+
+        // ACTUALIZACIÓN PROFESIONAL: Solo actualizamos los campos, NO renombramos el nodo (key).
+        await db.ref("bot_users/" + key).update({
+            name: newName,
+            number: newPhone,
+            phone: newPhone
+        });
+        alert("Ficha Actualizada"); resetUserForm();
     }
 
-    async function resetBot() { if(confirm("¿RESET?")) await db.ref("bot_control/command").set({action:"LOGOUT", timestamp:Date.now()}); }
-    function prepareProductEdit(id) {} // ...
-    async function saveProduct() {} // ...
+    function resetUserForm() { document.getElementById("u-key").value = ""; document.getElementById("u-name").value = ""; document.getElementById("u-phone").value = ""; document.getElementById("u-form-title").innerText = "Ficha de Cliente"; }
+
+    // --- SOLICITUDES ---
+    db.ref("talk_requests").on("value", snap => {
+        const list = document.getElementById("m-list-body"); list.innerHTML = "";
+        snap.forEach(c => {
+            const m = c.val(); const date = new Date(m.timestamp).toLocaleString();
+            const contact = m.number || '-';
+            list.innerHTML += `<tr>
+                <td><small>${date}</small></td>
+                <td>${m.name}</td>
+                <td>${contact}</td>
+                <td>
+                    <a href="https://wa.me/${contact.replace(/\D/g,'')}" class="action-btn btn-wa" target="_blank">HABLAR</a>
+                    <button class="action-btn btn-delete" onclick="deleteItem('talk_requests/${c.key}')">X</button>
+                </td>
+            </tr>`;
+        });
+    });
+
+    async function deleteItem(path) { if(confirm("¿Eliminar registro?")) await db.ref(path).remove(); }
+    async function resetBotSession() { if(confirm("¿CONFIRMAR LOGOUT?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
 </script>
 </body>
 </html>

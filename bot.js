@@ -14,20 +14,30 @@ const { getDatabase, ref, push, update, onValue, set, get } = require('firebase/
 const fs = require('fs');
 const express = require('express');
 
-// 🐺 CONFIGURACIÓN MAESTRA LOBO STORE
+// 🐺 INFRAESTRUCTURA DE CONTROL LOBO STORE
 const LOGO_OFFICIAL = 'https://i.postimg.cc/VNS1xbH0/logo-lobo.png';
 const ADMIN_JID = '5216682515249@s.whatsapp.net';
 const SESSION_PATH = 'auth_info_baileys';
 
-// --- FIREBASE INFRAESTRUCTURA ---
+// --- CONFIGURACIÓN FIREBASE ---
 const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
-// --- MONITOR DE SESIÓN ---
 const sessions = {};
 
-// Monitor de comandos remotos
+// --- FUNCIONES DE NORMALIZACIÓN PROFESIONAL ---
+const getCleanID = (jid) => jidNormalizedUser(jid).split('@')[0];
+
+const isLID = (jid) => jid.includes('@lid') || jidNormalizedUser(jid).length > 13;
+
+const formatPhoneForWA = (text) => {
+    const cleaned = text.replace(/\D/g, '');
+    if (cleaned.length >= 10 && cleaned.length <= 15) return cleaned;
+    return null;
+};
+
+// --- MONITOR REMOTO ---
 onValue(ref(db, "bot_control/command"), async (snapshot) => {
     const cmd = snapshot.val();
     if (cmd && cmd.action === "LOGOUT") {
@@ -44,22 +54,27 @@ let currentQR = null;
 app_web.get('/', (req, res) => {
     if (currentQR) {
         QRCode.toDataURL(currentQR, (err, url) => {
-            res.send(`<html><body style="background:#000;color:#00F2FF;text-align:center;padding:50px;"><img src="${LOGO_OFFICIAL}" style="width:100px;"><br><h1>VINCULAR BOT</h1><img src="${url}"><p>Escanea para activar.</p></body></html>`);
+            res.send(`<html><body style="background:#050505;color:#00F2FF;text-align:center;padding:50px;font-family:sans-serif;">
+                <img src="${LOGO_OFFICIAL}" style="width:120px;border-radius:20px;box-shadow:0 0 20px #00F2FF;margin-bottom:20px;">
+                <h1>PANEL DE VINCULACIÓN</h1><div style="background:white;padding:20px;display:inline-block;border-radius:20px;"><img src="${url}"></div>
+                <p>Escanea este código para conectar el Bot de Lobo Store.</p></body></html>`);
         });
-    } else { res.send('<h1>🐺 Lobo Store Online 🚀</h1>'); }
+    } else { res.send('<h1>🐺 Lobo Store está Online 🚀</h1>'); }
 });
 
 // --- MOTOR DEL BOT ---
-async function startLoboBot() {
+async function startProfessionalBot() {
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
     const { version } = await fetchLatestBaileysVersion();
+
+    console.log('\n[SISTEMA] Cargando Motor de Inteligencia Profesional...');
 
     const sock = makeWASocket({
         version,
         logger: pino({ level: 'silent' }),
         printQRInTerminal: true,
         auth: state,
-        browser: ['Lobo Store Control', 'Chrome', '1.0.0']
+        browser: ['Lobo Store Pro', 'Safari', '3.0']
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -69,8 +84,8 @@ async function startLoboBot() {
         if (qr) { currentQR = qr; qrcodeTerminal.generate(qr, { small: true }); }
         if (connection === 'close') {
             currentQR = null;
-            if ((lastDisconnect.error instanceof Boom) && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) startLoboBot();
-        } else if (connection === 'open') { currentQR = null; console.log('✅ BOT CONECTADO 🐺'); }
+            if ((lastDisconnect.error instanceof Boom) && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) startProfessionalBot();
+        } else if (connection === 'open') { currentQR = null; console.log('✅ SISTEMA PREMIUM CONECTADO 🐺🚀'); }
     });
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
@@ -79,17 +94,20 @@ async function startLoboBot() {
         if (!msg.message || msg.key.fromMe) return;
 
         const from = msg.key.remoteJid;
-        const userJid = jidNormalizedUser(from).split('@')[0];
+        const userWAID = getCleanID(from);
         const pushName = msg.pushName || 'Cliente';
         const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
         const lowerText = text.toLowerCase();
 
-        // 1. SINCRONIZACIÓN DE USUARIO
-        const userRef = ref(db, `bot_users/${userJid}`);
+        // 1. SINCRONIZACIÓN DE USUARIO CON BASE DE DATOS
+        const userRef = ref(db, `bot_users/${userWAID}`);
         let userData = {};
         try { const snap = await get(userRef); if (snap.exists()) userData = snap.val(); } catch (e) {}
 
-        const displayName = userData.name || pushName;
+        const finalDisplayName = userData.name || pushName;
+        const finalContactNumber = userData.number || (isLID(from) ? null : userWAID);
+
+        // Actualizar registro de actividad
         update(userRef, { whatsapp_name: pushName, last_seen: Date.now() });
 
         const sendLobo = async (jid, caption) => {
@@ -97,57 +115,60 @@ async function startLoboBot() {
             catch (e) { await sock.sendMessage(jid, { text: caption }); }
         };
 
-        // --- FLUJO DE CAPTURA DE NÚMERO ---
-        if (sessions[from] === 'waiting_number') {
+        // --- FLUJO DE CAPTURA DE CONTACTO ---
+        if (sessions[from] === 'waiting_data') {
             delete sessions[from];
 
-            // Extraer solo números
-            const providedNumber = text.replace(/\D/g, '');
-            const finalContactNumber = providedNumber.length >= 10 ? providedNumber : userJid;
+            const detectedPhone = formatPhoneForWA(text);
+            const saveNumber = detectedPhone || userWAID;
 
-            await sock.sendMessage(from, { text: `✅ ¡Recibido! He guardado tu número: *${finalContactNumber}*. El administrador te contactará muy pronto. 🐺` });
+            await sock.sendMessage(from, { text: `✅ ¡Perfecto! He recibido tus datos. El administrador se pondrá en contacto contigo a la brevedad. 🐺` });
 
-            // AVISO AL ADMIN (+52 1 668 251 5249)
-            await sock.sendMessage(ADMIN_JID, {
-                text: `🐺 *SOLICITUD DE ASESORÍA*\n\n*Usuario:* ${displayName}\n*Número proporcionado:* ${finalContactNumber}\n\n🔗 *Link WhatsApp Directo:* \nwa.me/${finalContactNumber}\n\n🔗 *Chat de origen:* \nwa.me/${userJid}`
-            });
+            // NOTIFICACIÓN AL ADMINISTRADOR (Profesional)
+            const aviso = `🐺 *NUEVA SOLICITUD DE ASESORÍA*\n\n` +
+                          `👤 *Nombre:* ${finalDisplayName}\n` +
+                          `📱 *Contacto:* ${detectedPhone || 'No proporcionado'}\n` +
+                          `🆔 *WA ID:* ${userWAID} ${isLID(from) ? '(LID)' : ''}\n\n` +
+                          `💬 *Mensaje del usuario:* \n"${text}"\n\n` +
+                          `🔗 *Link Directo:* \nwa.me/${saveNumber.replace(/\D/g,'')}`;
 
-            // Registrar en Panel Admin
+            await sock.sendMessage(ADMIN_JID, { text: aviso });
+
+            // Registro en Firebase
             try {
                 await push(ref(db, 'talk_requests'), {
-                    name: displayName,
-                    number: finalContactNumber,
-                    whatsapp_id: userJid,
-                    message: text,
+                    name: finalDisplayName,
+                    number: saveNumber,
+                    whatsapp_id: userWAID,
                     timestamp: Date.now()
                 });
-                // Actualizar ficha del cliente con el número que él mismo dio
-                await update(userRef, { number: finalContactNumber, phone: finalContactNumber });
+                // Guardar el número detectado en la ficha del cliente
+                if(detectedPhone) await update(userRef, { number: detectedPhone, phone: detectedPhone });
             } catch (e) {}
             return;
         }
 
-        // --- COMANDOS ---
-        if (['hola', 'menu', 'lobo'].includes(lowerText)) {
-            await sendLobo(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${displayName}*, bienvenido. Elige una opción:\n\n1️⃣ Catálogo Premium 📦\n4️⃣ Hablar con Administrador 👨‍💼`);
+        // --- COMANDOS INTELIGENTES ---
+        if (['hola', 'menu', 'lobo', 'menú', 'inicio'].includes(lowerText)) {
+            await sendLobo(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${finalDisplayName}*, bienvenido al servicio oficial de atención. ¿En qué podemos ayudarte?\n\n1️⃣ *Catálogo de Productos* 📦\n4️⃣ *Hablar con Administrador* 👨‍💼\n\n🌐 *Tienda Online:* \nhttps://producto-enventa-63d4e.firebaseapp.com/`);
             return;
         }
 
         if (lowerText === '1') {
-            await sock.sendMessage(from, { text: `🚀 Explora aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
+            await sock.sendMessage(from, { text: `🚀 *EXPLORA NUESTRO INVENTARIO*\n\nPrecios, categorías y stock en tiempo real aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
             return;
         }
 
         if (lowerText === '4') {
-            sessions[from] = 'waiting_number';
+            sessions[from] = 'waiting_data';
             await sock.sendMessage(from, { text: `👨‍💼 *CONTACTO PERSONALIZADO*\n\nPor favor, escribe tu *Nombre Completo* y tu *Número de Teléfono* para que el administrador te contacte personalmente.` });
             return;
         }
 
         if (text.includes('NUEVO PEDIDO - LOBO STORE')) {
-            await sendLobo(from, `👋 ¡Hola *${displayName}*! 🐺\n\nHe recibido tu pedido con éxito. Un asesor lo revisará de inmediato.\n\n✅ *Registrado en sistema.*`);
+            await sendLobo(from, `👋 ¡Hola *${finalDisplayName}*! 🐺\n\nHe recibido tu pedido con éxito. Estamos revisando la disponibilidad y un asesor te contactará de inmediato.\n\n✅ *Registrado en el sistema Modo Premium.*`);
         }
     });
 }
 
-app_web.listen(port, () => startLoboBot().catch(e => console.error(e)));
+app_web.listen(port, () => startProfessionalBot().catch(e => console.error(e)));
