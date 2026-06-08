@@ -87,7 +87,7 @@ async function connectToWhatsApp() {
         update(userRef, {
             whatsapp_name: pushName,
             whatsapp_number: userJid,
-            last_seen: Date.now()
+            last_seen: Date.now() // Unificando para que el admin siempre lo vea
         });
 
         const sendLobo = async (jid, caption) => {
