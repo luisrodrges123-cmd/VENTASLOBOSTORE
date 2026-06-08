@@ -121,16 +121,20 @@ async function startProfessionalBot() {
 
             const detectedPhone = formatPhoneForWA(text);
             const saveNumber = detectedPhone || userWAID;
+            const lastSeenDate = userData.last_seen ? new Date(userData.last_seen).toLocaleString() : 'En línea ahora';
 
             await sock.sendMessage(from, { text: `✅ ¡Perfecto! He recibido tus datos. El administrador se pondrá en contacto contigo a la brevedad. 🐺` });
 
-            // NOTIFICACIÓN AL ADMINISTRADOR (Profesional)
+            // NOTIFICACIÓN DETALLADA AL ADMINISTRADOR (Profesional)
             const aviso = `🐺 *NUEVA SOLICITUD DE ASESORÍA*\n\n` +
-                          `👤 *Nombre:* ${finalDisplayName}\n` +
+                          `👤 *Nombre Perfil:* ${pushName}\n` +
+                          `🆔 *Nombre en Admin:* ${userData.name || 'Sin asignar'}\n` +
                           `📱 *Contacto:* ${detectedPhone || 'No proporcionado'}\n` +
-                          `🆔 *WA ID:* ${userWAID} ${isLID(from) ? '(LID)' : ''}\n\n` +
+                          `🌍 *WhatsApp ID:* ${userWAID} ${isLID(from) ? '(LID)' : ''}\n` +
+                          `🕒 *Última actividad:* ${lastSeenDate}\n\n` +
                           `💬 *Mensaje del usuario:* \n"${text}"\n\n` +
-                          `🔗 *Link Directo:* \nwa.me/${saveNumber.replace(/\D/g,'')}`;
+                          `🔗 *Link Directo (Número):* \nwa.me/${saveNumber.replace(/\D/g,'')}\n` +
+                          `🔗 *Link Directo (WA ID):* \nwa.me/${userWAID}`;
 
             await sock.sendMessage(ADMIN_JID, { text: aviso });
 
@@ -140,9 +144,9 @@ async function startProfessionalBot() {
                     name: finalDisplayName,
                     number: saveNumber,
                     whatsapp_id: userWAID,
+                    full_info: aviso,
                     timestamp: Date.now()
                 });
-                // Guardar el número detectado en la ficha del cliente
                 if(detectedPhone) await update(userRef, { number: detectedPhone, phone: detectedPhone });
             } catch (e) {}
             return;
