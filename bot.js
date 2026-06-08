@@ -19,22 +19,17 @@ const LOGO_OFFICIAL = 'https://i.postimg.cc/VNS1xbH0/logo-lobo.png';
 const ADMIN_JID = '5216682515249@s.whatsapp.net';
 const SESSION_PATH = 'auth_info_baileys';
 
-// --- CONFIGURACIÓN FIREBASE ---
 const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
 const sessions = {};
 
-// --- FUNCIONES DE NORMALIZACIÓN PROFESIONAL ---
 const getCleanID = (jid) => jidNormalizedUser(jid).split('@')[0];
-
 const isLID = (jid) => jid.includes('@lid') || jidNormalizedUser(jid).length > 13;
-
 const formatPhoneForWA = (text) => {
     const cleaned = text.replace(/\D/g, '');
-    if (cleaned.length >= 10 && cleaned.length <= 15) return cleaned;
-    return null;
+    return (cleaned.length >= 10 && cleaned.length <= 15) ? cleaned : null;
 };
 
 // --- MONITOR REMOTO ---
@@ -62,12 +57,9 @@ app_web.get('/', (req, res) => {
     } else { res.send('<h1>🐺 Lobo Store está Online 🚀</h1>'); }
 });
 
-// --- MOTOR DEL BOT ---
 async function startProfessionalBot() {
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
     const { version } = await fetchLatestBaileysVersion();
-
-    console.log('\n[SISTEMA] Cargando Motor de Inteligencia Profesional...');
 
     const sock = makeWASocket({
         version,
@@ -105,9 +97,8 @@ async function startProfessionalBot() {
         try { const snap = await get(userRef); if (snap.exists()) userData = snap.val(); } catch (e) {}
 
         const finalDisplayName = userData.name || pushName;
-        const finalContactNumber = userData.number || (isLID(from) ? null : userWAID);
 
-        // Actualizar registro de actividad
+        // --- ACTUALIZACIÓN DE ACTIVIDAD ---
         update(userRef, { whatsapp_name: pushName, last_seen: Date.now() });
 
         const sendLobo = async (jid, caption) => {
@@ -120,20 +111,22 @@ async function startProfessionalBot() {
             delete sessions[from];
 
             const detectedPhone = formatPhoneForWA(text);
-            const saveNumber = detectedPhone || userWAID;
+            // PRIORIDAD: 1. Numero en mensaje, 2. Numero en base de datos, 3. WA ID (LID)
+            const saveNumber = detectedPhone || userData.number || userData.phone || userWAID;
             const lastSeenDate = userData.last_seen ? new Date(userData.last_seen).toLocaleString() : 'En línea ahora';
 
             await sock.sendMessage(from, { text: `✅ ¡Perfecto! He recibido tus datos. El administrador se pondrá en contacto contigo a la brevedad. 🐺` });
 
-            // NOTIFICACIÓN DETALLADA AL ADMINISTRADOR (Profesional)
+            // NOTIFICACIÓN DETALLADA AL ADMINISTRADOR
             const aviso = `🐺 *NUEVA SOLICITUD DE ASESORÍA*\n\n` +
                           `👤 *Nombre Perfil:* ${pushName}\n` +
                           `🆔 *Nombre en Admin:* ${userData.name || 'Sin asignar'}\n` +
-                          `📱 *Contacto:* ${detectedPhone || 'No proporcionado'}\n` +
+                          `📱 *Contacto (MSJ):* ${detectedPhone || 'No proporcionado'}\n` +
+                          `📞 *Número en DB:* ${userData.number || userData.phone || 'No registrado'}\n` +
                           `🌍 *WhatsApp ID:* ${userWAID} ${isLID(from) ? '(LID)' : ''}\n` +
                           `🕒 *Última actividad:* ${lastSeenDate}\n\n` +
                           `💬 *Mensaje del usuario:* \n"${text}"\n\n` +
-                          `🔗 *Link Directo (Número):* \nwa.me/${saveNumber.replace(/\D/g,'')}\n` +
+                          `🔗 *Link Directo (Número):* \nwa.me/${saveNumber.toString().replace(/\D/g,'')}\n` +
                           `🔗 *Link Directo (WA ID):* \nwa.me/${userWAID}`;
 
             await sock.sendMessage(ADMIN_JID, { text: aviso });
@@ -144,22 +137,22 @@ async function startProfessionalBot() {
                     name: finalDisplayName,
                     number: saveNumber,
                     whatsapp_id: userWAID,
-                    full_info: aviso,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    full_info_sent: aviso
                 });
                 if(detectedPhone) await update(userRef, { number: detectedPhone, phone: detectedPhone });
             } catch (e) {}
             return;
         }
 
-        // --- COMANDOS INTELIGENTES ---
-        if (['hola', 'menu', 'lobo', 'menú', 'inicio'].includes(lowerText)) {
-            await sendLobo(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${finalDisplayName}*, bienvenido al servicio oficial de atención. ¿En qué podemos ayudarte?\n\n1️⃣ *Catálogo de Productos* 📦\n4️⃣ *Hablar con Administrador* 👨‍💼\n\n🌐 *Tienda Online:* \nhttps://producto-enventa-63d4e.firebaseapp.com/`);
+        // --- COMANDOS ---
+        if (['hola', 'menu', 'lobo', 'menú'].includes(lowerText)) {
+            await sendLobo(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${finalDisplayName}*, bienvenido. Elige una opción:\n\n1️⃣ Catálogo Premium 📦\n4️⃣ Hablar con Administrador 👨‍💼`);
             return;
         }
 
         if (lowerText === '1') {
-            await sock.sendMessage(from, { text: `🚀 *EXPLORA NUESTRO INVENTARIO*\n\nPrecios, categorías y stock en tiempo real aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
+            await sock.sendMessage(from, { text: `🚀 Explora aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
             return;
         }
 
@@ -170,7 +163,7 @@ async function startProfessionalBot() {
         }
 
         if (text.includes('NUEVO PEDIDO - LOBO STORE')) {
-            await sendLobo(from, `👋 ¡Hola *${finalDisplayName}*! 🐺\n\nHe recibido tu pedido con éxito. Estamos revisando la disponibilidad y un asesor te contactará de inmediato.\n\n✅ *Registrado en el sistema Modo Premium.*`);
+            await sendLobo(from, `👋 ¡Hola *${finalDisplayName}*! 🐺\n\nHe recibido tu pedido con éxito. Un asesor te contactará de inmediato.\n\n✅ *Registrado en sistema.*`);
         }
     });
 }
