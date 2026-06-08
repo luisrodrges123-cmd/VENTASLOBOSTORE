@@ -29,27 +29,28 @@
             background: var(--dark-card); padding: 40px;
             border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
         }
 
         .header { text-align: center; margin-bottom: 40px; }
-        .logo { width: 120px; height: 120px; border-radius: 20px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 20px var(--neon-cyan); margin-bottom: 15px; }
+        .logo { width: 150px; height: 150px; border-radius: 20px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); margin-bottom: 20px; transition: 0.5s; }
 
         .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; flex-wrap: wrap; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: bold; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; }
+        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: bold; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; min-width: 120px; }
         .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 15px var(--neon-purple); }
 
-        .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; }
+        .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
         input, textarea { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
 
-        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .btn-edit { background: var(--neon-cyan); color: black; }
+        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.8rem; }
+        .btn-edit { background: var(--neon-cyan); color: black; margin-right: 5px; }
         .btn-delete { background: #FF3B30; color: white; }
-        .btn-danger { background: linear-gradient(45deg, #FF3B30, #990000); color: white; width: 100%; padding: 20px; font-size: 1rem; border-radius: 15px; margin-top: 20px; }
-        .btn-danger:hover { transform: scale(1.02); box-shadow: 0 0 20px #FF3B30; }
+        .btn-msg { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
+        .btn-danger { background: linear-gradient(45deg, #FF3B30, #990000); color: white; width: 100%; padding: 20px; font-size: 1rem; border-radius: 15px; margin-top: 20px; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; }
-        td { padding: 15px; border-bottom: 1px solid #222; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 20px; }
+        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.75rem; text-transform: uppercase; }
+        td { padding: 15px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
         .hidden { display: none; }
     </style>
 </head>
@@ -57,18 +58,21 @@
 
 <div class="container">
     <div class="header">
-        <img src="https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212061404_28.jpg" class="logo" alt="Logo">
+        <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
+            <img src="https://i.postimg.cc/JyW9Jt8R/logo-lobo.png" alt="Logo" class="logo">
+        </a>
         <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - CONTROL CENTER</h1>
     </div>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
-        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES</div>
-        <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS</div>
+        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
+        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
+        <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
         <div class="tab" id="tab-c" onclick="showTab('c')">BOT CONFIG ⚙️</div>
+        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">TIENDA 🌐</div>
     </div>
 
-    <!-- PRODUCTOS -->
     <div id="sec-p">
         <div class="form-section">
             <h3 id="form-title" style="color:var(--neon-cyan)">GESTIÓN DE INVENTARIO</h3>
@@ -80,28 +84,46 @@
                 <input type="number" id="stock" placeholder="Stock">
             </div>
             <input type="text" id="img" placeholder="Enlace de Imagen">
-            <textarea id="desc" placeholder="Descripción Premium"></textarea>
-            <button class="action-btn btn-edit" style="width:100%; padding:15px" onclick="save()">GUARDAR CAMBIOS</button>
+            <textarea id="desc" placeholder="Descripción detallada..."></textarea>
+            <button class="action-btn btn-edit" style="width:100%; padding:15px; color:black; font-weight:900;" onclick="save()">GUARDAR PRODUCTO</button>
+            <button class="action-btn btn-delete hidden" id="btn-cancel" style="width:100%; padding:10px; margin-top:10px;" onclick="resetForm()">CANCELAR EDICIÓN</button>
         </div>
-        <div id="p-list"></div>
+        <table>
+            <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Acción</th></tr></thead>
+            <tbody id="p-list-body"></tbody>
+        </table>
     </div>
 
-    <!-- BOT CONFIG (REINICIO SESIÓN) -->
+    <div id="sec-o" class="hidden">
+        <table>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Acción</th></tr></thead>
+            <tbody id="o-list-body"></tbody>
+        </table>
+    </div>
+
+    <div id="sec-m" class="hidden">
+        <h3 style="color:var(--neon-cyan)">SOLICITUDES DE ASESORÍA</h3>
+        <table>
+            <thead><tr><th>Fecha</th><th>Usuario</th><th>Datos Recibidos</th><th>Acción</th></tr></thead>
+            <tbody id="m-list-body"></tbody>
+        </table>
+    </div>
+
+    <div id="sec-u" class="hidden">
+        <h3 style="color:var(--neon-cyan)">BASE DE DATOS DE CLIENTES</h3>
+        <table>
+            <thead><tr><th>Nombre WhatsApp</th><th>Número</th><th>Acción</th></tr></thead>
+            <tbody id="u-list-body"></tbody>
+        </table>
+    </div>
+
     <div id="sec-c" class="hidden">
         <div class="form-section" style="text-align:center">
             <h2 style="color:#FF3B30">ZONA DE SEGURIDAD DEL BOT</h2>
-            <p style="color:var(--text-med)">Si el bot no responde o quieres conectarlo a otro número, usa el botón de abajo. Esto borrará la sesión actual y te pedirá un nuevo código QR en la página del bot.</p>
-
-            <button class="btn-danger" onclick="resetBotSession()">
-                🔥 CERRAR SESIÓN DEL BOT Y GENERAR NUEVO QR
-            </button>
-            <p style="margin-top:20px; font-size:0.8rem; color:grey;">Nota: El bot tardará unos 10 segundos en reiniciarse después de pulsar el botón.</p>
+            <p style="color:var(--text-med)">Cierra la sesión para generar un nuevo código QR.</p>
+            <button class="btn-danger" onclick="resetBotSession()">🔥 CERRAR SESIÓN DEL BOT (LOGOUT)</button>
         </div>
     </div>
-
-    <!-- MENSAJES Y USUARIOS (Similares a los anteriores) -->
-    <div id="sec-m" class="hidden"><table id="m-table"></table></div>
-    <div id="sec-u" class="hidden"><table id="u-table"></table></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
@@ -111,41 +133,94 @@
     const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    let productsData = {};
 
     function showTab(t) {
-        ['p','m','u','c'].forEach(s => {
-            document.getElementById('sec-'+s).classList.add('hidden');
-            document.getElementById('tab-'+s).classList.remove('active');
+        ['p','o','m','u','c'].forEach(s => {
+            const sec = document.getElementById('sec-'+s);
+            const tab = document.getElementById('tab-'+s);
+            if(sec) sec.classList.add('hidden');
+            if(tab) tab.classList.remove('active');
         });
         document.getElementById('sec-'+t).classList.remove('hidden');
         document.getElementById('tab-'+t).classList.add('active');
     }
 
-    // FUNCIÓN PARA REINICIAR EL BOT
-    async function resetBotSession() {
-        if(confirm("¿ESTÁS SEGURO? Esto desconectará el bot de WhatsApp inmediatamente.")) {
-            await db.ref("bot_control/command").set({
-                action: "LOGOUT",
-                timestamp: Date.now()
-            });
-            alert("Comando enviado. Ve a la página del bot para escanear el nuevo QR.");
-        }
-    }
-
-    // Listado de productos (simplificado para el ejemplo)
     db.ref("products").on("value", (snap) => {
-        const div = document.getElementById("p-list"); div.innerHTML = "<table><thead><tr><th>Producto</th><th>Acción</th></tr></thead><tbody id='p-tbody'></tbody></table>";
-        const tbody = document.getElementById("p-tbody");
-        snap.forEach(child => {
+        const list = document.getElementById("p-list-body"); list.innerHTML = "";
+        productsData = {};
+        snap.forEach((child) => {
             const p = child.val();
-            tbody.innerHTML += `<tr><td>${p.name}</td><td><button class='action-btn btn-delete' onclick='db.ref("products/${child.key}").remove()'>X</button></td></tr>`;
+            productsData[child.key] = p;
+            list.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>$${p.price}</td><td>${p.stock || 0}</td><td>
+                <button class="action-btn btn-edit" onclick="prepareEdit('${child.key}')">EDITAR</button>
+                <button class="action-btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
+            </td></tr>`;
+        });
+    });
+
+    db.ref("orders").on("value", (snap) => {
+        const list = document.getElementById("o-list-body"); list.innerHTML = "";
+        snap.forEach((child) => {
+            const o = child.val();
+            list.innerHTML += `<tr><td>${o.username}</td><td>${o.phone}</td><td>${o.productName}</td><td><button class="action-btn btn-delete" onclick="deleteItem('orders/${child.key}')">X</button></td></tr>`;
+        });
+    });
+
+    db.ref("talk_requests").on("value", (snap) => {
+        const list = document.getElementById("m-list-body"); list.innerHTML = "";
+        snap.forEach((child) => {
+            const m = child.val();
+            const date = new Date(m.timestamp).toLocaleString();
+            list.innerHTML += `<tr><td>${date}</td><td>${m.name}</td><td>${m.numero_detectado || m.datos_cliente || '-'}</td><td>
+                <a href="https://wa.me/${(m.number || '').replace(/\D/g,'')}" class="btn-msg" target="_blank">HABLAR</a>
+                <button class="action-btn btn-delete" onclick="deleteItem('talk_requests/${child.key}')">X</button>
+            </td></tr>`;
+        });
+    });
+
+    db.ref("bot_users").on("value", (snap) => {
+        const list = document.getElementById("u-list-body"); list.innerHTML = "";
+        snap.forEach((child) => {
+            const u = child.val();
+            list.innerHTML += `<tr><td>${u.pushName || 'Anonimo'}</td><td>${u.number}</td><td><a href="https://wa.me/${u.number}" class="btn-msg" target="_blank">WHATSAPP</a></td></tr>`;
         });
     });
 
     async function save() {
-        const data = { name: document.getElementById("name").value, price: parseFloat(document.getElementById("price").value), category: document.getElementById("category").value, stock: parseInt(document.getElementById("stock").value), description: document.getElementById("desc").value, imageUrl: document.getElementById("img").value };
-        await db.ref("products").push(data);
-        alert("¡Guardado!");
+        const id = document.getElementById("edit-id").value;
+        const data = { name: document.getElementById("name").value.trim(), price: parseFloat(document.getElementById("price").value) || 0, category: document.getElementById("category").value.trim(), stock: parseInt(document.getElementById("stock").value) || 0, description: document.getElementById("desc").value.trim(), imageUrl: document.getElementById("img").value.trim() };
+        if(id) await db.ref("products/" + id).set(data);
+        else await db.ref("products").push(data);
+        alert("¡Éxito!"); resetForm();
+    }
+
+    function prepareEdit(id) {
+        const p = productsData[id];
+        document.getElementById("edit-id").value = id;
+        document.getElementById("name").value = p.name || "";
+        document.getElementById("price").value = p.price || 0;
+        document.getElementById("category").value = p.category || "";
+        document.getElementById("stock").value = p.stock || 0;
+        document.getElementById("desc").value = p.description || "";
+        document.getElementById("img").value = p.imageUrl || "";
+        document.getElementById("btn-cancel").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetForm() {
+        document.getElementById("edit-id").value = "";
+        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
+        document.getElementById("btn-cancel").classList.add("hidden");
+    }
+
+    async function deleteItem(path) { if(confirm("¿Eliminar?")) await db.ref(path).remove(); }
+
+    async function resetBotSession() {
+        if(confirm("¿DESCONECTAR BOT?")) {
+            await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() });
+            alert("Orden enviada.");
+        }
     }
 </script>
 </body>
