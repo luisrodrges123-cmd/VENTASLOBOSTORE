@@ -7,7 +7,7 @@
     <style>
         :root { --cyan: #00F2FF; --purple: #BC13FE; --bg: #050505; --card: #121212; }
         body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .container { max-width: 1100px; margin: auto; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
         .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; background: #222; border-radius: 10px; font-weight: bold; }
         .tab.active { background: var(--purple); box-shadow: 0 0 15px var(--purple); }
@@ -16,6 +16,7 @@
         .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
         .btn-edit { background: var(--cyan); color: black; }
         .btn-delete { background: #FF3B30; color: white; }
+        .btn-msg { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; color: var(--cyan); padding: 10px; font-size: 0.8rem; }
         td { padding: 10px; border-bottom: 1px solid #222; }
@@ -30,32 +31,43 @@
         <div class="tab" id="tab-c" onclick="showTab('c')">BOT CONFIG ⚙️</div>
     </div>
 
-    <!-- PRODUCTOS -->
+    <!-- SECCIÓN PRODUCTOS -->
     <div id="sec-p">
         <div class="form-section">
             <h3 id="p-title">NUEVO PRODUCTO</h3>
             <input type="hidden" id="p-id">
             <input type="text" id="p-name" placeholder="Nombre">
             <input type="number" id="p-price" placeholder="Precio">
-            <button class="btn btn-edit" onclick="saveProduct()">GUARDAR</button>
+            <button class="btn btn-edit" onclick="saveProduct()">GUARDAR PRODUCTO</button>
         </div>
         <table id="p-table"><thead><tr><th>Nombre</th><th>Acción</th></tr></thead><tbody id="p-list"></tbody></table>
     </div>
 
-    <!-- USUARIOS -->
+    <!-- SECCIÓN USUARIOS -->
     <div id="sec-u" class="hidden">
         <div class="form-section">
             <h3 id="u-title">EDITAR DATOS DE CLIENTE</h3>
             <input type="hidden" id="u-key">
-            <input type="text" id="u-name" placeholder="Nombre Personalizado">
-            <input type="number" id="u-phone" placeholder="Número de Contacto">
-            <button class="btn btn-edit" onclick="saveUser()">ACTUALIZAR DATOS</button>
-            <button class="btn btn-delete" onclick="resetUserForm()">CANCELAR</button>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                <input type="text" id="u-name" placeholder="Nombre Personalizado">
+                <input type="number" id="u-phone" placeholder="Número de Contacto (Para WhatsApp)">
+            </div>
+            <button class="btn btn-edit" style="width:100%" onclick="saveUser()">ACTUALIZAR DATOS Y LINK</button>
+            <button class="btn btn-delete" style="width:100%; margin-top:10px" onclick="resetUserForm()">CANCELAR</button>
         </div>
-        <table><thead><tr><th>Cliente</th><th>Número</th><th>WhatsApp</th><th>Acción</th></tr></thead><tbody id="u-list"></tbody></table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Número Guardado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="u-list"></tbody>
+        </table>
     </div>
 
-    <!-- BOT CONFIG -->
+    <!-- SECCIÓN BOT CONFIG -->
     <div id="sec-c" class="hidden" style="text-align:center">
         <button class="btn btn-delete" style="padding:20px; width:100%" onclick="resetBot()">🔥 RESETEAR SESIÓN BOT</button>
     </div>
@@ -63,6 +75,7 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+
 <script>
     const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
@@ -70,10 +83,15 @@
     let products = {}; let users = {};
 
     function showTab(t) {
-        ['p','u','c'].forEach(s => { document.getElementById('sec-'+s).classList.add('hidden'); document.getElementById('tab-'+s).classList.remove('active'); });
-        document.getElementById('sec-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('active');
+        ['p','u','c'].forEach(s => {
+            document.getElementById('sec-'+s).classList.add('hidden');
+            document.getElementById('tab-'+s).classList.remove('active');
+        });
+        document.getElementById('sec-'+t).classList.remove('hidden');
+        document.getElementById('tab-'+t).classList.add('active');
     }
 
+    // LISTAR PRODUCTOS
     db.ref("products").on("value", snap => {
         const list = document.getElementById("p-list"); list.innerHTML = "";
         snap.forEach(child => {
@@ -82,16 +100,26 @@
         });
     });
 
+    // LISTAR USUARIOS
     db.ref("bot_users").on("value", snap => {
         const list = document.getElementById("u-list"); list.innerHTML = "";
         users = {};
         snap.forEach(child => {
-            const u = child.val(); users[child.key] = u;
+            const u = child.val();
+            const key = child.key;
+            users[key] = u;
+
+            // Usar el número editado si existe, si no el JID de WhatsApp
+            const finalNumber = u.number || u.phone || key;
+            const waLink = `https://wa.me/${finalNumber.replace(/\D/g,'')}`;
+
             list.innerHTML += `<tr>
                 <td><strong>${u.name || u.whatsapp_name || 'Nuevo'}</strong></td>
-                <td>${u.number || '-'}</td>
-                <td>${child.key}</td>
-                <td><button class='btn btn-edit' onclick='prepareUser("${child.key}")'>EDITAR</button></td>
+                <td>${finalNumber}</td>
+                <td>
+                    <button class='action-btn btn-edit' style='padding:8px; border-radius:5px' onclick='prepareUser("${key}")'>EDITAR</button>
+                    <a href="${waLink}" class='btn-msg' target="_blank">WHATSAPP</a>
+                </td>
             </tr>`;
         });
     });
@@ -100,26 +128,38 @@
         const u = users[key];
         document.getElementById("u-key").value = key;
         document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
-        document.getElementById("u-phone").value = u.number || "";
-        document.getElementById("u-title").innerText = "EDITANDO CLIENTE: " + key;
+        document.getElementById("u-phone").value = u.number || u.phone || "";
+        document.getElementById("u-title").innerText = "EDITANDO DATOS: " + (u.name || u.whatsapp_name);
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     async function saveUser() {
         const key = document.getElementById("u-key").value;
-        if(!key) return alert("Selecciona un usuario");
+        const newName = document.getElementById("u-name").value.trim();
+        const newPhone = document.getElementById("u-phone").value.trim();
+
+        if(!key) return alert("Selecciona un usuario de la lista");
+
         await db.ref("bot_users/" + key).update({
-            name: document.getElementById("u-name").value,
-            number: document.getElementById("u-phone").value,
-            phone: document.getElementById("u-phone").value
+            name: newName,
+            number: newPhone,
+            phone: newPhone
         });
-        alert("Datos sincronizados con el bot.");
+
+        alert("Datos y Link de WhatsApp actualizados.");
         resetUserForm();
     }
 
-    function resetUserForm() { document.getElementById("u-key").value = ""; document.getElementById("u-name").value = ""; document.getElementById("u-phone").value = ""; }
+    function resetUserForm() {
+        document.getElementById("u-key").value = "";
+        document.getElementById("u-name").value = "";
+        document.getElementById("u-phone").value = "";
+        document.getElementById("u-title").innerText = "EDITAR DATOS DE CLIENTE";
+    }
+
     async function resetBot() { if(confirm("¿RESET?")) await db.ref("bot_control/command").set({action:"LOGOUT", timestamp:Date.now()}); }
-    function editP(id) { /* similar logic */ }
-    async function saveProduct() { /* similar logic */ }
+    function editP(id) { /* logic */ }
+    async function saveProduct() { /* logic */ }
 </script>
 </body>
 </html>

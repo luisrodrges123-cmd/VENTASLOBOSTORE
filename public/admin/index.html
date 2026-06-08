@@ -3,132 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CENTRO DE CONTROL - Lobo Store</title>
+    <title>ADMIN - Lobo Store</title>
     <style>
-        :root {
-            --neon-cyan: #00F2FF;
-            --neon-purple: #BC13FE;
-            --bg-black: #050505;
-            --dark-card: #121212;
-            --text-high: #E0E0E0;
-            --text-med: #9E9E9E;
-            --glass: rgba(255, 255, 255, 0.03);
-        }
-
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-black);
-            color: var(--text-high);
-            margin: 0; padding: 20px;
-            background: radial-gradient(circle at top right, #1a1a1a, #050505);
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1200px; margin: auto;
-            background: var(--dark-card); padding: 40px;
-            border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .header { text-align: center; margin-bottom: 40px; }
-        .logo { width: 150px; height: 150px; border-radius: 20px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); margin-bottom: 20px; transition: 0.5s; }
-        .logo:hover { transform: scale(1.05) rotate(5deg); }
-
-        .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; flex-wrap: wrap; }
-        .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: bold; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; min-width: 120px; }
-        .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 15px var(--neon-purple); }
-
-        .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
-        input, textarea { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 10px rgba(0,242,255,0.2); }
-
-        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.8rem; }
-        .btn-edit { background: var(--neon-cyan); color: black; margin-right: 5px; }
+        :root { --cyan: #00F2FF; --purple: #BC13FE; --bg: #050505; --card: #121212; }
+        body { font-family: sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { flex: 1; padding: 15px; text-align: center; cursor: pointer; background: #222; border-radius: 10px; font-weight: bold; }
+        .tab.active { background: var(--purple); box-shadow: 0 0 15px var(--purple); }
+        .form-section { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 15px; margin-bottom: 30px; border-left: 4px solid var(--cyan); }
+        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        .btn-edit { background: var(--cyan); color: black; }
         .btn-delete { background: #FF3B30; color: white; }
-        .btn-msg { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 10px 15px; border-radius: 8px; font-weight: bold; }
-        .btn-danger { background: linear-gradient(45deg, #FF3B30, #990000); color: white; width: 100%; padding: 20px; font-size: 1rem; border-radius: 15px; margin-top: 20px; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
-
-        table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 20px; }
-        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; }
-        td { padding: 15px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
-        tr td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-radius: 12px 0 0 12px; }
-        tr td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-radius: 0 12px 12px 0; }
-
-        .stock-badge { background: rgba(0, 242, 255, 0.1); color: var(--neon-cyan); padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; }
+        .btn-msg { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; color: var(--cyan); padding: 10px; font-size: 0.8rem; }
+        td { padding: 10px; border-bottom: 1px solid #222; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <div class="header">
-        <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
-            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo" class="logo">
-        </a>
-        <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - CONTROL CENTER</h1>
-    </div>
-
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
-        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
-        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
         <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
         <div class="tab" id="tab-c" onclick="showTab('c')">BOT CONFIG ⚙️</div>
-        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">TIENDA 🌐</div>
     </div>
 
     <div id="sec-p">
         <div class="form-section">
-            <h3 id="form-title" style="color:var(--neon-cyan)">GESTIÓN DE INVENTARIO</h3>
-            <input type="hidden" id="edit-id">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
-                <input type="text" id="name" placeholder="Nombre">
-                <input type="number" id="price" placeholder="Precio ($)">
-                <input type="text" id="category" placeholder="Categoría">
-                <input type="number" id="stock" placeholder="Stock">
-            </div>
-            <input type="text" id="img" placeholder="Enlace de Imagen">
-            <textarea id="desc" placeholder="Descripción detallada..."></textarea>
-            <button class="action-btn btn-edit" style="width:100%; padding:15px; color:black; font-weight:900;" onclick="save()">GUARDAR PRODUCTO</button>
-            <button class="action-btn btn-delete hidden" id="btn-cancel" style="width:100%; padding:10px; margin-top:10px;" onclick="resetForm()">CANCELAR EDICIÓN</button>
+            <h3 id="p-title">GESTIÓN PRODUCTOS</h3>
+            <input type="hidden" id="p-id">
+            <input type="text" id="p-name" placeholder="Nombre">
+            <input type="number" id="p-price" placeholder="Precio">
+            <button class="btn btn-edit" onclick="saveProduct()">GUARDAR</button>
         </div>
-        <table>
-            <thead><tr><th>Producto</th><th>Precio</th><th>Stock</th><th>Acción</th></tr></thead>
-            <tbody id="p-list-body"></tbody>
-        </table>
-    </div>
-
-    <div id="sec-o" class="hidden">
-        <table>
-            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Acción</th></tr></thead>
-            <tbody id="o-list-body"></tbody>
-        </table>
-    </div>
-
-    <div id="sec-m" class="hidden">
-        <h3 style="color:var(--neon-cyan)">SOLICITUDES DE ASESORÍA</h3>
-        <table>
-            <thead><tr><th>Fecha</th><th>Usuario</th><th>Datos Recibidos</th><th>Acción</th></tr></thead>
-            <tbody id="m-list-body"></tbody>
-        </table>
+        <table id="p-table"><thead><tr><th>Nombre</th><th>Acción</th></tr></thead><tbody id="p-list"></tbody></table>
     </div>
 
     <div id="sec-u" class="hidden">
-        <h3 style="color:var(--neon-cyan)">BASE DE DATOS DE CLIENTES</h3>
+        <div class="form-section">
+            <h3 id="u-title">EDITAR DATOS DE CLIENTE</h3>
+            <input type="hidden" id="u-key">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px">
+                <input type="text" id="u-name" placeholder="Nombre Personalizado">
+                <input type="number" id="u-phone" placeholder="Número de Contacto (Para WhatsApp)">
+            </div>
+            <button class="btn btn-edit" style="width:100%" onclick="saveUser()">ACTUALIZAR DATOS Y LINK</button>
+            <button class="btn btn-delete" style="width:100%; margin-top:10px" onclick="resetUserForm()">CANCELAR</button>
+        </div>
         <table>
-            <thead><tr><th>Nombre WhatsApp</th><th>Número</th><th>Acción</th></tr></thead>
-            <tbody id="u-list-body"></tbody>
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Número Guardado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="u-list"></tbody>
         </table>
     </div>
 
-    <div id="sec-c" class="hidden">
-        <div class="form-section" style="text-align:center">
-            <h2 style="color:#FF3B30">ZONA DE SEGURIDAD DEL BOT</h2>
-            <p style="color:var(--text-med)">Cierra la sesión para generar un nuevo código QR.</p>
-            <button class="btn-danger" onclick="resetBotSession()">🔥 CERRAR SESIÓN DEL BOT (LOGOUT)</button>
-        </div>
+    <div id="sec-c" class="hidden" style="text-align:center">
+        <button class="btn btn-delete" style="padding:20px; width:100%" onclick="resetBot()">🔥 RESETEAR SESIÓN BOT</button>
     </div>
 </div>
 
@@ -139,129 +77,70 @@
     const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    let productsData = {};
+    let products = {}; let users = {};
 
     function showTab(t) {
-        ['p','o','m','u','c'].forEach(s => {
-            const sec = document.getElementById('sec-'+s);
-            const tab = document.getElementById('tab-'+s);
-            if(sec) sec.classList.add('hidden');
-            if(tab) tab.classList.remove('active');
+        ['p','u','c'].forEach(s => {
+            document.getElementById('sec-'+s).classList.add('hidden');
+            document.getElementById('tab-'+s).classList.remove('active');
         });
         document.getElementById('sec-'+t).classList.remove('hidden');
         document.getElementById('tab-'+t).classList.add('active');
     }
 
-    db.ref("products").on("value", (snap) => {
-        const list = document.getElementById("p-list-body"); list.innerHTML = "";
-        productsData = {};
-        snap.forEach((child) => {
-            const p = child.val();
-            productsData[child.key] = p;
-            list.innerHTML += `<tr><td><strong>${p.name}</strong></td><td>$${p.price}</td><td>${p.stock || 0}</td><td>
-                <button class="action-btn btn-edit" onclick="prepareEdit('${child.key}')">EDITAR</button>
-                <button class="action-btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
-            </td></tr>`;
+    db.ref("products").on("value", snap => {
+        const list = document.getElementById("p-list"); list.innerHTML = "";
+        snap.forEach(child => {
+            const p = child.val(); products[child.key] = p;
+            list.innerHTML += `<tr><td>${p.name}</td><td><button class='btn btn-edit' onclick='editP("${child.key}")'>E</button></td></tr>`;
         });
     });
 
-    db.ref("orders").on("value", (snap) => {
-        const list = document.getElementById("o-list-body"); list.innerHTML = "";
-        snap.forEach((child) => {
-            const o = child.val();
-            list.innerHTML += `<tr><td>${o.username}</td><td>${o.phone}</td><td>${o.productName}</td><td><button class="action-btn btn-delete" onclick="deleteItem('orders/${child.key}')">X</button></td></tr>`;
-        });
-    });
-
-    db.ref("talk_requests").on("value", (snap) => {
-        const list = document.getElementById("m-list-body"); list.innerHTML = "";
-        snap.forEach((child) => {
-            const m = child.val();
-            const date = new Date(m.timestamp).toLocaleString();
-            list.innerHTML += `<tr><td>${date}</td><td>${m.name}</td><td>${m.numero_detectado || m.datos_cliente || '-'}</td><td>
-                <a href="https://wa.me/${(m.number || '').replace(/\D/g,'')}" class="btn-msg" target="_blank">HABLAR</a>
-                <button class="action-btn btn-delete" onclick="deleteItem('talk_requests/${child.key}')">X</button>
-            </td></tr>`;
-        });
-    });
-
-    db.ref("bot_users").on("value", (snap) => {
-        const list = document.getElementById("u-list-body"); list.innerHTML = "";
-        snap.forEach((child) => {
+    db.ref("bot_users").on("value", snap => {
+        const list = document.getElementById("u-list"); list.innerHTML = "";
+        users = {};
+        snap.forEach(child => {
             const u = child.val();
             const key = child.key;
+            users[key] = u;
+
+            const finalNumber = u.number || u.phone || key;
+            const waLink = `https://wa.me/${finalNumber.replace(/\D/g,'')}`;
+
             list.innerHTML += `<tr>
-                <td><strong>${u.name || u.pushName || 'Anonimo'}</strong></td>
-                <td>${u.number || key}</td>
+                <td><strong>${u.name || u.whatsapp_name || 'Nuevo'}</strong></td>
+                <td>${finalNumber}</td>
                 <td>
-                    <button class="action-btn btn-edit" onclick="editUser('${key}', '${u.name || u.pushName || ''}', '${u.number || key}')">EDITAR</button>
-                    <a href="https://wa.me/${u.number || key}" class="btn-msg" target="_blank">WHATSAPP</a>
-                    <button class="action-btn btn-delete" onclick="deleteItem('bot_users/${key}')">X</button>
+                    <button class='btn btn-edit' style='padding:8px;' onclick='prepareUser("${key}")'>EDITAR</button>
+                    <a href="${waLink}" class='btn-msg' target="_blank">WHATSAPP</a>
                 </td>
             </tr>`;
         });
     });
 
-    async function editUser(key, oldName, oldNumber) {
-        const newName = prompt("Nuevo nombre para el usuario:", oldName);
-        const newNumber = prompt("Nuevo número para el usuario (solo números):", oldNumber);
-
-        if (newName !== null && newNumber !== null) {
-            try {
-                if (newNumber !== oldNumber) {
-                    const data = (await db.ref("bot_users/" + key).once("value")).val();
-                    data.name = newName;
-                    data.number = newNumber;
-                    data.phone = newNumber;
-                    await db.ref("bot_users/" + newNumber).set(data);
-                    await db.ref("bot_users/" + key).remove();
-                } else {
-                    await db.ref("bot_users/" + key).update({ name: newName, pushName: newName });
-                }
-                alert("Usuario actualizado.");
-            } catch (e) { alert(e.message); }
-        }
+    function prepareUser(key) {
+        const u = users[key];
+        document.getElementById("u-key").value = key;
+        document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
+        document.getElementById("u-phone").value = u.number || u.phone || "";
+        document.getElementById("u-title").innerText = "EDITANDO DATOS: " + (u.name || u.whatsapp_name);
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
-    async function save() {
-        const id = document.getElementById("edit-id").value;
-        const data = { name: document.getElementById("name").value.trim(), price: parseFloat(document.getElementById("price").value) || 0, category: document.getElementById("category").value.trim(), stock: parseInt(document.getElementById("stock").value) || 0, description: document.getElementById("desc").value.trim(), imageUrl: document.getElementById("img").value.trim() };
-        if(!data.name) return alert("Nombre obligatorio");
-        try {
-            if(id) await db.ref("products/" + id).set(data);
-            else await db.ref("products").push(data);
-            alert("¡Éxito!"); resetForm();
-        } catch(e) { alert(e.message); }
+    async function saveUser() {
+        const key = document.getElementById("u-key").value;
+        const newName = document.getElementById("u-name").value.trim();
+        const newPhone = document.getElementById("u-phone").value.trim();
+        if(!key) return alert("Selecciona un usuario");
+        await db.ref("bot_users/" + key).update({ name: newName, number: newPhone, phone: newPhone });
+        alert("¡Datos y Link actualizados!");
+        resetUserForm();
     }
 
-    function prepareEdit(id) {
-        const p = productsData[id];
-        document.getElementById("edit-id").value = id;
-        document.getElementById("name").value = p.name || "";
-        document.getElementById("price").value = p.price || 0;
-        document.getElementById("category").value = p.category || "";
-        document.getElementById("stock").value = p.stock || 0;
-        document.getElementById("desc").value = p.description || "";
-        document.getElementById("img").value = p.imageUrl || "";
-        document.getElementById("form-title").innerText = "EDITANDO: " + p.name;
-        document.getElementById("btn-cancel").classList.remove("hidden");
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function resetForm() {
-        document.getElementById("edit-id").value = "";
-        document.querySelectorAll('input, textarea').forEach(i => i.value = "");
-        document.getElementById("btn-cancel").classList.add("hidden");
-    }
-
-    async function deleteItem(path) { if(confirm("¿Eliminar?")) await db.ref(path).remove(); }
-
-    async function resetBotSession() {
-        if(confirm("¿DESCONECTAR BOT?")) {
-            await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() });
-            alert("Orden enviada.");
-        }
-    }
+    function resetUserForm() { document.getElementById("u-key").value = ""; document.getElementById("u-name").value = ""; document.getElementById("u-phone").value = ""; }
+    async function resetBot() { if(confirm("¿RESET?")) await db.ref("bot_control/command").set({action:"LOGOUT", timestamp:Date.now()}); }
+    function editP(id) { /* ... */ }
+    async function saveProduct() { /* ... */ }
 </script>
 </body>
 </html>
