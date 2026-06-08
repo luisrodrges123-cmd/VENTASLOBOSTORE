@@ -16,31 +16,32 @@ const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.fir
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🐺 CONFIGURACIÓN BOT MODO PREMIUM (Logo Oficial Estable)
-const LOGO_PREMIUM = 'https://i.postimg.cc/JyW9Jt8R/logo-lobo.png';
+// 🐺 CONFIGURACIÓN BOT MODO PREMIUM (Logo Final Metálico 24/7)
+const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212033005_17.jpg';
 const ADMIN_NUMBER = '5216682515249@s.whatsapp.net';
 
 const sessions = {};
 
-// Funciones de utilidad
 const getRealNumber = (jid) => jidNormalizedUser(jid).split('@')[0];
-
 const extractPhoneNumber = (text) => {
     const cleaned = text.replace(/\D/g, '');
-    if (cleaned.length >= 10) return cleaned;
-    return null;
+    return cleaned.length >= 10 ? cleaned : null;
 };
 
 async function connectToWhatsApp() {
     const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
     const { version } = await fetchLatestBaileysVersion();
 
+    console.log('🚀 Iniciando Sistema Lobo Store 24/7...');
+
     const sock = makeWASocket({
         version,
         logger: pino({ level: 'silent' }),
         printQRInTerminal: true,
         auth: state,
-        browser: ['Lobo Store Premium', 'Chrome', '1.0.0']
+        browser: ['Lobo Store 24/7', 'Chrome', '1.0.0'],
+        connectTimeoutMs: 60000,
+        keepAliveIntervalMs: 30000
     });
 
     sock.ev.on('creds.update', saveCreds);
@@ -48,12 +49,17 @@ async function connectToWhatsApp() {
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
         if (qr) qrcode.generate(qr, { small: true });
+
         if (connection === 'close') {
-            const shouldReconnect = (lastDisconnect.error instanceof Boom) ?
-                lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut : true;
-            if (shouldReconnect) connectToWhatsApp();
+            const code = (lastDisconnect.error instanceof Boom) ? lastDisconnect.error.output.statusCode : 0;
+            console.log(`[!] Conexión cerrada (Código: ${code}). Reconectando...`);
+
+            // Si no es un cierre de sesión manual, reconectar siempre
+            if (code !== DisconnectReason.loggedOut) {
+                setTimeout(() => connectToWhatsApp(), 5000);
+            }
         } else if (connection === 'open') {
-            console.log('✅ SISTEMA LOBO STORE PREMIUM ACTIVO 🐺💎');
+            console.log('✅ SISTEMA PREMIUM ONLINE 24/7 🐺💎');
         }
     });
 
@@ -68,47 +74,11 @@ async function connectToWhatsApp() {
         const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
         const mensaje = text.toLowerCase();
 
-        // --- REGISTRO AUTOMÁTICO ---
-        try {
-            update(ref(db, 'bot_users/' + userNumber), {
-                pushName: pushName,
-                number: userNumber,
-                lastSeen: Date.now()
-            });
-        } catch (e) {}
-
-        // --- DETECCIÓN INTELIGENTE DE DATOS ---
-        if (sessions[from] === 'waiting_contact_info') {
-            const detectedNumber = extractPhoneNumber(text);
-
-            if (!detectedNumber) {
-                await sock.sendMessage(from, { text: `❌ No he podido reconocer un número de teléfono válido. Por favor, envía tu número a 10 dígitos (ej: 6681234567).` });
-                return;
-            }
-
-            delete sessions[from];
-            await sock.sendMessage(from, { text: `✅ ¡Perfecto! He detectado el número: *${detectedNumber}*. El Administrador de *LOBO STORE* te contactará de inmediato. 🐺` });
-
-            // Aviso al Admin con el número DETECTADO
-            await sock.sendMessage(ADMIN_NUMBER, {
-                text: `🐺 *NUEVA SOLICITUD DE ASESORÍA*\n\n*Usuario:* ${pushName}\n*Número proporcionado:* ${detectedNumber}\n*WhatsApp de origen:* wa.me/${userNumber}\n\n*Mensaje completo:* \n${text}`
-            });
-
-            try {
-                const newRef = push(ref(db, 'talk_requests'));
-                await update(newRef, {
-                    name: pushName,
-                    numero_detectado: detectedNumber,
-                    mensaje_original: text,
-                    number: userNumber,
-                    timestamp: Date.now()
-                });
-            } catch (e) {}
-            return;
-        }
+        // Registro silencioso del usuario
+        try { update(ref(db, 'bot_users/' + userNumber), { pushName, number: userNumber, lastSeen: Date.now() }); } catch (e) {}
 
         // --- FUNCIÓN PARA ENVIAR IMAGEN PREMIUM ---
-        const sendPremiumImage = async (jid, caption) => {
+        const sendLobo = async (jid, caption) => {
             try {
                 await sock.sendMessage(jid, { image: { url: LOGO_PREMIUM }, caption });
             } catch (err) {
@@ -116,27 +86,47 @@ async function connectToWhatsApp() {
             }
         };
 
-        // --- COMANDOS ---
+        // --- LÓGICA DE ASESORÍA ---
+        if (sessions[from] === 'waiting_contact_info') {
+            const detected = extractPhoneNumber(text);
+            if (!detected) {
+                await sock.sendMessage(from, { text: `❌ Por favor, envía un número de teléfono válido (10 dígitos) para que el administrador pueda contactarte.` });
+                return;
+            }
+            delete sessions[from];
+            await sock.sendMessage(from, { text: `✅ ¡Recibido! He detectado tu número: *${detected}*. El Administrador te contactará muy pronto. 🐺` });
+            await sock.sendMessage(ADMIN_NUMBER, { text: `🐺 *AVISO 24/7*\n\nUsuario: ${pushName}\nNúmero: ${detected}\nWhatsApp: wa.me/${userNumber}\n\n"${text}"` });
+            try {
+                const newRef = push(ref(db, 'talk_requests'));
+                await update(newRef, { name: pushName, numero_detectado: detected, message: text, number: userNumber, timestamp: Date.now() });
+            } catch (e) {}
+            return;
+        }
+
+        // --- RESPUESTAS AUTOMÁTICAS ---
         if (text.includes('NUEVO PEDIDO - LOBO STORE')) {
-            await sendPremiumImage(from, `👋 ¡Hola ${pushName}! 🐺\n\nHe recibido tu pedido con éxito. Un asesor lo revisará en este momento.\n\n✅ *Registrado en sistema Modo Premium.*`);
+            await sendLobo(from, `👋 ¡Hola ${pushName}! 🐺\n\nTu pedido desde la web ha sido recibido con éxito. Un asesor humano confirmará la disponibilidad en un momento.\n\n✅ *Registrado en el sistema 24/7.*`);
             return;
         }
 
         if (mensaje === 'hola' || mensaje === 'menu' || mensaje === 'lobo' || mensaje === 'menú') {
-            await sendPremiumImage(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${pushName}*, bienvenido a nuestra atención de lujo. ¿En qué podemos ayudarte?\n\n1️⃣ *Ver Catálogo Premium* 📦\n2️⃣ *Promociones del Mes* 🔥\n3️⃣ *Horarios y Entregas* 🕒\n4️⃣ *Hablar con Administrador* 👨‍💼\n\n🌐 *Tienda Online:* \nhttps://producto-enventa-63d4e.firebaseapp.com/`);
+            await sendLobo(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${pushName}*, bienvenido al servicio Premium 24/7. ¿Cómo podemos ayudarte?\n\n1️⃣ *Catálogo de Productos* 📦\n2️⃣ *Promociones* 🔥\n3️⃣ *Horarios y Entregas* 🕒\n4️⃣ *Hablar con Administrador* 👨‍💼\n\n🌐 *Tienda Online:* \nhttps://producto-enventa-63d4e.firebaseapp.com/`);
             return;
         }
 
         if (mensaje === '4') {
             sessions[from] = 'waiting_contact_info';
-            await sock.sendMessage(from, { text: `👨‍💼 *CONTACTO PERSONALIZADO*\n\nPor favor, escribe tu *Nombre Completo* y tu *Número de Teléfono* para que el administrador te contacte directamente.` });
+            await sock.sendMessage(from, { text: `👨‍💼 *ATENCIÓN PERSONALIZADA*\n\nPor favor, escribe tu *Nombre Completo* y tu *Número de Teléfono* para que mi jefe te contacte personalmente.` });
             return;
         }
 
         if (mensaje === '1') {
-            await sock.sendMessage(from, { text: `🚀 Explora nuestro inventario en tiempo real aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
+            await sock.sendMessage(from, { text: `🚀 Mira nuestro inventario actualizado aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
         }
     });
 }
 
-connectToWhatsApp().catch(err => console.log("Error: " + err));
+connectToWhatsApp().catch(err => {
+    console.log("Error de sistema, reiniciando...");
+    setTimeout(() => connectToWhatsApp(), 5000);
+});
