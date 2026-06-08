@@ -1,7 +1,7 @@
 {
   "name": "ventas-lobo-store-bot",
   "version": "1.0.0",
-  "description": "WhatsApp Bot para Ventas Lobo Store",
+  "description": "WhatsApp Bot Premium para Lobo Store",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
@@ -12,6 +12,7 @@
     "express": "^4.18.2",
     "firebase": "^10.7.1",
     "pino": "^8.16.2",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "qrcode": "^1.5.3"
   }
 }
