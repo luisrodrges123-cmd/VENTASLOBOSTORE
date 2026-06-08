@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA PROFESIONAL - Lobo Store</title>
+    <title>SISTEMA PREMIUM - Lobo Store Control</title>
     <style>
         :root {
             --neon-cyan: #00F2FF;
@@ -14,6 +14,7 @@
             --text-med: #9E9E9E;
             --glass: rgba(255, 255, 255, 0.03);
             --success: #25D366;
+            --danger: #FF3B30;
         }
 
         body {
@@ -35,9 +36,10 @@
 
         .header { text-align: center; margin-bottom: 40px; }
         .logo { width: 140px; height: 140px; border-radius: 25px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); margin-bottom: 20px; transition: 0.5s; }
+        .logo:hover { transform: scale(1.05) rotate(5deg); }
 
-        .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; }
-        .tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; }
+        .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; min-width: 120px; }
         .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 20px var(--neon-purple); }
 
         .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
@@ -57,10 +59,10 @@
         tr td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255,255,255,0.05); }
 
         .action-group { display: flex; gap: 10px; }
-        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; }
+        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit { background: var(--neon-purple); color: white; }
-        .btn-delete { background: #FF3B30; color: white; }
-        .btn-wa { background: var(--success); color: white; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-wa { background: var(--success); color: white; }
 
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
         .badge-cyan { background: rgba(0, 242, 255, 0.1); color: var(--neon-cyan); }
@@ -73,71 +75,86 @@
 
 <div class="container">
     <div class="header">
-        <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" class="logo" alt="Lobo Store">
-        <h1 style="color:var(--neon-cyan)">SISTEMA DE GESTIÓN PROFESIONAL</h1>
+        <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
+            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo" class="logo">
+        </a>
+        <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - MODO PREMIUM</h1>
     </div>
 
     <div class="tabs">
-        <div class="tab active" id="tab-p" onclick="showTab('p')">Inventario</div>
-        <div class="tab" id="tab-u" onclick="showTab('u')">Base de Datos 👥</div>
-        <div class="tab" id="tab-m" onclick="showTab('m')">Solicitudes 💬</div>
-        <div class="tab" id="tab-c" onclick="showTab('c')">Sistema ⚙️</div>
+        <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
+        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
+        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
+        <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
+        <div class="tab" id="tab-c" onclick="showTab('c')">BOT CONFIG ⚙️</div>
+        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">TIENDA 🌐</div>
     </div>
 
-    <!-- PRODUCTOS -->
+    <!-- SECCIÓN PRODUCTOS -->
     <div id="sec-p">
         <div class="form-section">
-            <h3 id="p-form-title">Control de Artículos</h3>
+            <h3 id="p-form-title">GESTIÓN DE ARTÍCULOS</h3>
             <input type="hidden" id="p-id">
             <div class="input-grid">
                 <input type="text" id="p-name" placeholder="Nombre Comercial">
-                <input type="number" id="p-price" placeholder="Precio de Venta ($)">
-                <input type="text" id="p-category" placeholder="Categoría / Marca">
-                <input type="number" id="p-stock" placeholder="Stock Actual">
+                <input type="number" id="p-price" placeholder="Precio ($)">
+                <input type="text" id="p-category" placeholder="Categoría">
+                <input type="number" id="p-stock" placeholder="Stock Inicial">
                 <input type="text" id="p-img" placeholder="Enlace de la Imagen">
             </div>
-            <textarea id="p-desc" placeholder="Características y detalles técnicos..." style="height: 80px; margin-bottom: 20px;"></textarea>
-            <button class="btn-main" onclick="saveProduct()">GUARDAR ARTÍCULO PREMIUM</button>
+            <textarea id="p-desc" placeholder="Descripción y características técnicas..." style="width:100%; height:80px; margin-bottom:20px;"></textarea>
+            <button class="btn-main" onclick="saveProduct()">GUARDAR ARTÍCULO</button>
+            <button class="action-btn btn-delete hidden" id="p-btn-cancel" style="width:100%; margin-top:10px;" onclick="resetProductForm()">CANCELAR EDICIÓN</button>
         </div>
         <table>
-            <thead><tr><th>Artículo</th><th>Precio</th><th>Categoría</th><th>Existencia</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Artículo</th><th>Precio</th><th>Categoría</th><th>Stock</th><th>Acciones</th></tr></thead>
             <tbody id="p-list-body"></tbody>
         </table>
     </div>
 
-    <!-- USUARIOS -->
+    <!-- SECCIÓN USUARIOS -->
     <div id="sec-u" class="hidden">
         <div class="form-section">
-            <h3 id="u-form-title">Ficha de Cliente</h3>
+            <h3 id="u-form-title">FICHA DE CLIENTE</h3>
             <input type="hidden" id="u-key">
+            <input type="hidden" id="u-old-phone">
             <div class="input-grid">
                 <input type="text" id="u-name" placeholder="Nombre Asignado">
-                <input type="number" id="u-phone" placeholder="Número de Contacto Profesional">
+                <input type="number" id="u-phone" placeholder="Número Telefónico Real">
             </div>
-            <button class="btn-main" onclick="saveUser()">ACTUALIZAR DATOS DE CLIENTE</button>
-            <button class="btn-main" style="background:#333; color:white; margin-top:10px" onclick="resetUserForm()">CANCELAR / LIMPIAR</button>
+            <button class="btn-main" onclick="saveUser()">ACTUALIZAR DATOS</button>
+            <button class="action-btn btn-delete" style="width:100%; margin-top:10px;" onclick="resetUserForm()">CANCELAR / LIMPIAR</button>
         </div>
         <table>
-            <thead><tr><th>Identidad</th><th>Contacto Directo</th><th>ID WhatsApp</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Identidad</th><th>Número Real</th><th>WhatsApp ID</th><th>Actividad</th><th>Acciones</th></tr></thead>
             <tbody id="u-list-body"></tbody>
         </table>
     </div>
 
-    <!-- SOLICITUDES -->
-    <div id="sec-m" class="hidden">
-        <h3 style="color:var(--neon-cyan)">REGISTRO DE ASESORÍAS</h3>
+    <!-- SECCIÓN PEDIDOS -->
+    <div id="sec-o" class="hidden">
+        <h3 style="color:var(--neon-cyan)">ORDENES RECIBIDAS</h3>
         <table>
-            <thead><tr><th>Fecha / Hora</th><th>Nombre</th><th>Número Solicitado</th><th>Operación</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="o-list-body"></tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN MENSAJES -->
+    <div id="sec-m" class="hidden">
+        <h3 style="color:var(--neon-cyan)">SOLICITUDES DE ASESORÍA</h3>
+        <table>
+            <thead><tr><th>Fecha / Hora</th><th>Usuario</th><th>Número</th><th>Chat</th><th>Acción</th></tr></thead>
             <tbody id="m-list-body"></tbody>
         </table>
     </div>
 
-    <!-- CONFIG -->
+    <!-- SECCIÓN CONFIG BOT -->
     <div id="sec-c" class="hidden" style="text-align:center">
         <div class="form-section">
-            <h2 style="color:#FF3B30">ZONA CRÍTICA</h2>
-            <p style="margin-bottom:30px">Use esta opción solo si el bot presenta fallas técnicas o desea cambiar de dispositivo.</p>
-            <button class="btn-main" style="background: #FF3B30; color:white" onclick="resetBotSession()">REINICIAR SESIÓN GLOBAL (LOGOUT)</button>
+            <h2 style="color:var(--danger)">SEGURIDAD DEL SISTEMA</h2>
+            <p>Cierra la sesión del bot para vincular un nuevo número o solucionar bloqueos.</p>
+            <button class="btn-main" style="background:var(--danger); color:white" onclick="resetBotSession()">🔥 CERRAR SESIÓN DEL BOT (LOGOUT)</button>
         </div>
     </div>
 </div>
@@ -153,12 +170,11 @@
     let productsCache = {}; let usersCache = {};
 
     function showTab(t) {
-        ['p','u','m','c'].forEach(s => {
-            document.getElementById('sec-'+s).classList.add('hidden');
-            document.getElementById('tab-'+s).classList.remove('active');
+        ['p','o','m','u','c'].forEach(s => {
+            const sec = document.getElementById('sec-'+s); const tab = document.getElementById('tab-'+s);
+            if(sec) sec.classList.add('hidden'); if(tab) tab.classList.remove('active');
         });
-        document.getElementById('sec-'+t).classList.remove('hidden');
-        document.getElementById('tab-'+t).classList.add('active');
+        document.getElementById('sec-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('active');
     }
 
     // --- PRODUCTOS ---
@@ -173,7 +189,7 @@
                 <td>${p.category || '-'}</td>
                 <td>${p.stock || 0} u.</td>
                 <td class="action-group">
-                    <button class="action-btn btn-edit" onclick="prepareProductEdit('${child.key}')">Editar</button>
+                    <button class="action-btn btn-edit" onclick="prepareProductEdit('${child.key}')">EDITAR</button>
                     <button class="action-btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
                 </td>
             </tr>`;
@@ -190,10 +206,10 @@
             description: document.getElementById("p-desc").value.trim(),
             imageUrl: document.getElementById("p-img").value.trim()
         };
-        if(!data.name) return alert("Ingrese el nombre");
+        if(!data.name) return alert("Nombre obligatorio");
         if(id) await db.ref("products/" + id).set(data);
         else await db.ref("products").push(data);
-        alert("Sincronizado"); resetProductForm();
+        alert("Guardado"); resetProductForm();
     }
 
     function prepareProductEdit(id) {
@@ -205,35 +221,38 @@
         document.getElementById("p-stock").value = p.stock || 0;
         document.getElementById("p-desc").value = p.description || "";
         document.getElementById("p-img").value = p.imageUrl || "";
-        document.getElementById("p-form-title").innerText = "MODIFICANDO: " + p.name;
+        document.getElementById("p-form-title").innerText = "EDITANDO: " + p.name;
+        document.getElementById("p-btn-cancel").classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function resetProductForm() { document.getElementById("p-id").value = ""; document.querySelectorAll('#sec-p input, #sec-p textarea').forEach(i => i.value = ""); document.getElementById("p-form-title").innerText = "Control de Artículos"; }
+    function resetProductForm() {
+        document.getElementById("p-id").value = "";
+        document.querySelectorAll('#sec-p input, #sec-p textarea').forEach(i => i.value = "");
+        document.getElementById("p-form-title").innerText = "GESTIÓN DE INVENTARIO";
+        document.getElementById("p-btn-cancel").classList.add("hidden");
+    }
 
-    // --- USUARIOS PROFESIONAL ---
+    // --- USUARIOS ---
     db.ref("bot_users").on("value", (snap) => {
         const list = document.getElementById("u-list-body"); list.innerHTML = "";
         usersCache = {};
         snap.forEach((child) => {
             const u = child.val(); const key = child.key; usersCache[key] = u;
-            // El número profesional es el que el admin edita. Si no existe, usamos el de WA o informamos que es un LID.
             const contactNum = u.number || u.phone || "";
             const isLid = key.length > 13;
-
-            // Generamos el link prioritario: 1. Numero editado, 2. Si el key NO es LID, usar el key.
-            let linkNum = contactNum.replace(/\D/g,'');
-            if(!linkNum && !isLid) linkNum = key.replace(/\D/g,'');
-
-            const waLink = linkNum ? `https://wa.me/${linkNum}` : "#";
+            const lastTime = new Date(u.last_seen || Date.now()).toLocaleString();
+            const waLink = contactNum ? `https://wa.me/${contactNum.toString().replace(/\D/g,'')}` : `https://wa.me/${key.split(':')[0]}`;
 
             list.innerHTML += `<tr>
                 <td><strong>${u.name || u.whatsapp_name || 'Sin Nombre'}</strong></td>
-                <td><span style="color:var(--neon-cyan)">${contactNum || 'N/A'}</span></td>
+                <td><span style="color:var(--neon-cyan)">${contactNum || 'No registrado'}</span></td>
                 <td><small style="color:grey">${isLid ? 'ID EMPRESARIAL' : key}</small></td>
+                <td><small>${lastTime}</small></td>
                 <td class="action-group">
                     <button class="action-btn btn-edit" onclick="prepareUserEdit('${key}')">EDITAR</button>
-                    ${linkNum ? `<a href="${waLink}" class="action-btn btn-wa" target="_blank">CHAT</a>` : ''}
+                    <a href="${waLink}" class="action-btn btn-wa" target="_blank">CHAT</a>
+                    <button class="action-btn btn-delete" onclick="deleteItem('bot_users/${key}')">X</button>
                 </td>
             </tr>`;
         });
@@ -242,49 +261,59 @@
     function prepareUserEdit(key) {
         const u = usersCache[key];
         document.getElementById("u-key").value = key;
+        document.getElementById("u-old-phone").value = u.number || u.phone || "";
         document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
         document.getElementById("u-phone").value = u.number || u.phone || "";
-        document.getElementById("u-form-title").innerText = "EDITAR CLIENTE: " + (u.name || u.whatsapp_name);
+        document.getElementById("u-form-title").innerText = "EDITANDO CLIENTE: " + (u.name || u.whatsapp_name);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function saveUser() {
         const key = document.getElementById("u-key").value;
-        const newName = document.getElementById("u-name").value.trim();
-        const newPhone = document.getElementById("u-phone").value.trim();
+        const oldPh = document.getElementById("u-old-phone").value;
+        const nN = document.getElementById("u-name").value.trim();
+        const nP = document.getElementById("u-phone").value.trim();
         if(!key) return alert("Seleccione un usuario");
 
-        // ACTUALIZACIÓN PROFESIONAL: Solo actualizamos los campos, NO renombramos el nodo (key).
-        await db.ref("bot_users/" + key).update({
-            name: newName,
-            number: newPhone,
-            phone: newPhone
-        });
-        alert("Ficha Actualizada"); resetUserForm();
+        const data = (await db.ref("bot_users/" + key).once("value")).val() || {};
+        data.name = nN; data.number = nP; data.phone = nP; data.last_seen = data.last_seen || Date.now();
+
+        if (nP !== oldPh && nP !== "") {
+            await db.ref("bot_users/" + nP).set(data);
+            await db.ref("bot_users/" + key).remove();
+        } else {
+            await db.ref("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
+        }
+        alert("Ficha Sincronizada"); resetUserForm();
     }
 
-    function resetUserForm() { document.getElementById("u-key").value = ""; document.getElementById("u-name").value = ""; document.getElementById("u-phone").value = ""; document.getElementById("u-form-title").innerText = "Ficha de Cliente"; }
+    function resetUserForm() {
+        document.getElementById("u-key").value = "";
+        document.getElementById("u-name").value = "";
+        document.getElementById("u-phone").value = "";
+        document.getElementById("u-form-title").innerText = "FICHA DE CLIENTE";
+    }
 
-    // --- SOLICITUDES ---
+    // --- PEDIDOS Y MENSAJES ---
+    db.ref("orders").on("value", snap => {
+        const list = document.getElementById("o-list-body"); list.innerHTML = "";
+        snap.forEach(c => {
+            const o = c.val(); const date = o.timestamp ? new Date(o.timestamp).toLocaleString() : '-';
+            list.innerHTML += `<tr><td>${o.username}</td><td>${o.phone}</td><td>${o.productName}</td><td><small>${date}</small></td><td><button class='action-btn btn-delete' onclick='deleteItem("orders/${c.key}")'>X</button></td></tr>`;
+        });
+    });
+
     db.ref("talk_requests").on("value", snap => {
         const list = document.getElementById("m-list-body"); list.innerHTML = "";
         snap.forEach(c => {
             const m = c.val(); const date = new Date(m.timestamp).toLocaleString();
-            const contact = m.number || '-';
-            list.innerHTML += `<tr>
-                <td><small>${date}</small></td>
-                <td>${m.name}</td>
-                <td>${contact}</td>
-                <td>
-                    <a href="https://wa.me/${contact.replace(/\D/g,'')}" class="action-btn btn-wa" target="_blank">HABLAR</a>
-                    <button class="action-btn btn-delete" onclick="deleteItem('talk_requests/${c.key}')">X</button>
-                </td>
-            </tr>`;
+            const contact = m.number || m.whatsapp_id || '-';
+            list.innerHTML += `<tr><td><small>${date}</small></td><td>${m.name}</td><td>${contact}</td><td><a href="https://wa.me/${contact.toString().replace(/\D/g,'')}" class="action-btn btn-wa" target="_blank">HABLAR</a></td><td><button class='action-btn btn-delete' onclick='deleteItem("talk_requests/${c.key}")'>X</button></td></tr>`;
         });
     });
 
-    async function deleteItem(path) { if(confirm("¿Eliminar registro?")) await db.ref(path).remove(); }
-    async function resetBotSession() { if(confirm("¿CONFIRMAR LOGOUT?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
+    async function deleteItem(path) { if(confirm("¿Eliminar permanentemente?")) await db.ref(path).remove(); }
+    async function resetBotSession() { if(confirm("¿CERRAR SESIÓN GLOBAL?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
 </script>
 </body>
 </html>
