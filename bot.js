@@ -14,7 +14,7 @@ const { getDatabase, ref, push, update } = require('firebase/database');
 const express = require('express');
 
 // --- CONFIGURACIÓN GLOBAL ---
-const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212053139_23.jpg';
+const LOGO_PREMIUM = 'https://storage.googleapis.com/static.smart-chat.ai/v1/user-images/f77b9468-d064-4e35-a1c6-29177114b01d/20250212060137_25.jpg';
 const ADMIN_NUMBER = '5216682515249@s.whatsapp.net';
 let lastQR = null;
 

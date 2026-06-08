@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+auth_info_baileys/
+node_modules/
+.firebase/
