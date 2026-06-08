@@ -7,30 +7,51 @@ const {
 } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const qrcodeTerminal = require('qrcode-terminal');
+const QRCode = require('qrcode');
 const pino = require('pino');
 const { initializeApp } = require('firebase/app');
 const { getDatabase, ref, push, update, onValue, set, get } = require('firebase/database');
 const fs = require('fs');
+const express = require('express');
 
-// 🐺 CONFIGURACIÓN GLOBAL
-const LOGO_URL = 'https://i.postimg.cc/VNS1xbH0/logo-lobo.png';
-const ADMIN_NUMBER = '5216682515249@s.whatsapp.net';
-const AUTH_FOLDER = 'auth_info_baileys';
+// 🐺 CONFIGURACIÓN MAESTRA LOBO STORE
+const LOGO_OFFICIAL = 'https://i.postimg.cc/VNS1xbH0/logo-lobo.png';
+const ADMIN_JID = '5216682515249@s.whatsapp.net';
+const SESSION_PATH = 'auth_info_baileys';
 
+// --- FIREBASE INFRAESTRUCTURA ---
 const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
 const firebaseApp = initializeApp(firebaseConfig);
 const db = getDatabase(firebaseApp);
 
+// --- MONITOR DE SESIÓN ---
 const sessions = {};
 
-const getRealNumber = (jid) => jidNormalizedUser(jid).split('@')[0];
-const extractPhoneNumber = (text) => {
-    const cleaned = text.replace(/\D/g, '');
-    return cleaned.length >= 10 ? cleaned : null;
-};
+// Monitor de comandos remotos
+onValue(ref(db, "bot_control/command"), async (snapshot) => {
+    const cmd = snapshot.val();
+    if (cmd && cmd.action === "LOGOUT") {
+        await set(ref(db, "bot_control/command"), null);
+        if (fs.existsSync(SESSION_PATH)) fs.rmSync(SESSION_PATH, { recursive: true, force: true });
+        process.exit(0);
+    }
+});
 
-async function connectToWhatsApp() {
-    const { state, saveCreds } = await useMultiFileAuthState(AUTH_FOLDER);
+// --- SERVIDOR WEB ---
+const app_web = express();
+const port = process.env.PORT || 3000;
+let currentQR = null;
+app_web.get('/', (req, res) => {
+    if (currentQR) {
+        QRCode.toDataURL(currentQR, (err, url) => {
+            res.send(`<html><body style="background:#000;color:#00F2FF;text-align:center;padding:50px;"><img src="${LOGO_OFFICIAL}" style="width:100px;"><br><h1>VINCULAR BOT</h1><img src="${url}"><p>Escanea para activar.</p></body></html>`);
+        });
+    } else { res.send('<h1>🐺 Lobo Store Online 🚀</h1>'); }
+});
+
+// --- MOTOR DEL BOT ---
+async function startLoboBot() {
+    const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
     const { version } = await fetchLatestBaileysVersion();
 
     const sock = makeWASocket({
@@ -43,22 +64,13 @@ async function connectToWhatsApp() {
 
     sock.ev.on('creds.update', saveCreds);
 
-    // CONTROL REMOTO LOGOUT
-    onValue(ref(db, "bot_control/command"), async (snapshot) => {
-        const cmd = snapshot.val();
-        if (cmd && cmd.action === "LOGOUT") {
-            await set(ref(db, "bot_control/command"), null);
-            if (fs.existsSync(AUTH_FOLDER)) fs.rmSync(AUTH_FOLDER, { recursive: true, force: true });
-            process.exit(0);
-        }
-    });
-
     sock.ev.on('connection.update', (update) => {
         const { connection, lastDisconnect, qr } = update;
-        if (qr) qrcodeTerminal.generate(qr, { small: true });
+        if (qr) { currentQR = qr; qrcodeTerminal.generate(qr, { small: true }); }
         if (connection === 'close') {
-            if ((lastDisconnect.error instanceof Boom) && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) connectToWhatsApp();
-        } else if (connection === 'open') console.log('✅ BOT ONLINE 🐺');
+            currentQR = null;
+            if ((lastDisconnect.error instanceof Boom) && lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut) startLoboBot();
+        } else if (connection === 'open') { currentQR = null; console.log('✅ BOT CONECTADO 🐺'); }
     });
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
@@ -67,69 +79,75 @@ async function connectToWhatsApp() {
         if (!msg.message || msg.key.fromMe) return;
 
         const from = msg.key.remoteJid;
-        const userJid = getRealNumber(from);
+        const userJid = jidNormalizedUser(from).split('@')[0];
         const pushName = msg.pushName || 'Cliente';
         const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
         const lowerText = text.toLowerCase();
 
-        // --- OBTENER DATOS ACTUALIZADOS DESDE FIREBASE ---
+        // 1. SINCRONIZACIÓN DE USUARIO
         const userRef = ref(db, `bot_users/${userJid}`);
         let userData = {};
-        try {
-            const snapshot = await get(userRef);
-            if (snapshot.exists()) userData = snapshot.val();
-        } catch (e) {}
+        try { const snap = await get(userRef); if (snap.exists()) userData = snap.val(); } catch (e) {}
 
-        // Priorizar nombre editado por admin
-        const finalDisplayName = userData.name || pushName;
-
-        // Actualizar datos básicos (sin borrar los editados)
-        update(userRef, {
-            whatsapp_name: pushName,
-            whatsapp_number: userJid,
-            last_seen: Date.now() // Unificando para que el admin siempre lo vea
-        });
+        const displayName = userData.name || pushName;
+        update(userRef, { whatsapp_name: pushName, last_seen: Date.now() });
 
         const sendLobo = async (jid, caption) => {
-            try { await sock.sendMessage(jid, { image: { url: LOGO_URL }, caption }); }
+            try { await sock.sendMessage(jid, { image: { url: LOGO_OFFICIAL }, caption }); }
             catch (e) { await sock.sendMessage(jid, { text: caption }); }
         };
 
-        // --- FLUJO CAPTURA DE DATOS ---
-        if (sessions[from] === 'waiting_contact_info') {
-            const detected = extractPhoneNumber(text);
-            if (!detected) {
-                await sock.sendMessage(from, { text: `❌ No reconozco ese número. Por favor envía tu número a 10 dígitos.` });
-                return;
-            }
+        // --- FLUJO DE CAPTURA DE NÚMERO ---
+        if (sessions[from] === 'waiting_number') {
             delete sessions[from];
 
-            await update(userRef, {
-                name: finalDisplayName,
-                number: detected,
-                phone: detected
+            // Extraer solo números
+            const providedNumber = text.replace(/\D/g, '');
+            const finalContactNumber = providedNumber.length >= 10 ? providedNumber : userJid;
+
+            await sock.sendMessage(from, { text: `✅ ¡Recibido! He guardado tu número: *${finalContactNumber}*. El administrador te contactará muy pronto. 🐺` });
+
+            // AVISO AL ADMIN (+52 1 668 251 5249)
+            await sock.sendMessage(ADMIN_JID, {
+                text: `🐺 *SOLICITUD DE ASESORÍA*\n\n*Usuario:* ${displayName}\n*Número proporcionado:* ${finalContactNumber}\n\n🔗 *Link WhatsApp Directo:* \nwa.me/${finalContactNumber}\n\n🔗 *Chat de origen:* \nwa.me/${userJid}`
             });
 
-            await sock.sendMessage(from, { text: `✅ ¡Hola *${finalDisplayName}*! He guardado tu número: *${detected}*. El Administrador te contactará pronto. 🐺` });
-            await sock.sendMessage(ADMIN_NUMBER, {
-                text: `🐺 *AVISO DE ATENCIÓN*\n\nUsuario: ${finalDisplayName}\nNúmero de contacto: ${detected}\nLink WhatsApp: wa.me/${userJid}`
-            });
-
-            try { await push(ref(db, 'talk_requests'), { name: finalDisplayName, number: detected, whatsapp: userJid, timestamp: Date.now() }); } catch (e) {}
+            // Registrar en Panel Admin
+            try {
+                await push(ref(db, 'talk_requests'), {
+                    name: displayName,
+                    number: finalContactNumber,
+                    whatsapp_id: userJid,
+                    message: text,
+                    timestamp: Date.now()
+                });
+                // Actualizar ficha del cliente con el número que él mismo dio
+                await update(userRef, { number: finalContactNumber, phone: finalContactNumber });
+            } catch (e) {}
             return;
         }
 
         // --- COMANDOS ---
         if (['hola', 'menu', 'lobo'].includes(lowerText)) {
-            await sendLobo(from, `🐺 *LOBO STORE PREMIUM* 🐺\n\nHola *${finalDisplayName}*, bienvenido. Elige una opción:\n\n1️⃣ Catálogo\n4️⃣ Hablar con Administrador (Dejar mis datos)`);
+            await sendLobo(from, `🐺 *CENTRAL DE VENTAS LOBO STORE* 🐺\n\nHola *${displayName}*, bienvenido. Elige una opción:\n\n1️⃣ Catálogo Premium 📦\n4️⃣ Hablar con Administrador 👨‍💼`);
+            return;
+        }
+
+        if (lowerText === '1') {
+            await sock.sendMessage(from, { text: `🚀 Explora aquí:\nhttps://producto-enventa-63d4e.firebaseapp.com/` });
             return;
         }
 
         if (lowerText === '4') {
-            sessions[from] = 'waiting_contact_info';
-            await sock.sendMessage(from, { text: `👨‍💼 *DEJA TUS DATOS*\n\nPor favor, escribe tu *Nombre* y tu *Número de Teléfono* para actualizar tu ficha de cliente y contactarte.` });
+            sessions[from] = 'waiting_number';
+            await sock.sendMessage(from, { text: `👨‍💼 *CONTACTO PERSONALIZADO*\n\nPor favor, escribe tu *Nombre Completo* y tu *Número de Teléfono* para que el administrador te contacte personalmente.` });
+            return;
+        }
+
+        if (text.includes('NUEVO PEDIDO - LOBO STORE')) {
+            await sendLobo(from, `👋 ¡Hola *${displayName}*! 🐺\n\nHe recibido tu pedido con éxito. Un asesor lo revisará de inmediato.\n\n✅ *Registrado en sistema.*`);
         }
     });
 }
 
-connectToWhatsApp().catch(e => console.log(e));
+app_web.listen(port, () => startLoboBot().catch(e => console.error(e)));

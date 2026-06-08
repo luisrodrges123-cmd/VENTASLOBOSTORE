@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA PREMIUM - Lobo Store</title>
+    <title>CENTRO DE CONTROL - Lobo Store</title>
     <style>
         :root { --cyan: #00F2FF; --purple: #BC13FE; --bg: #050505; --card: #121212; --text: #E0E0E0; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; }
@@ -15,10 +15,10 @@
         .tab.active { background: var(--purple); color: white; box-shadow: 0 0 15px var(--purple); }
         .form-section { background: rgba(255,255,255,0.02); padding: 30px; border-radius: 20px; margin-bottom: 40px; }
         input, textarea { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
-        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.8rem; }
         .btn-edit { background: var(--cyan); color: black; }
         .btn-delete { background: #FF3B30; color: white; }
-        .btn-wa { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; }
+        .btn-wa { background: #25D366; color: white; text-decoration: none; display: inline-block; padding: 8px 12px; border-radius: 6px; }
         table { width: 100%; border-collapse: separate; border-spacing: 0 8px; }
         th { text-align: left; color: var(--cyan); padding: 15px; font-size: 0.75rem; text-transform: uppercase; }
         td { padding: 15px; background: rgba(255,255,255,0.02); border-bottom: 1px solid #222; }
@@ -29,44 +29,54 @@
 <div class="container">
     <div class="header">
         <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" class="logo">
-        <h1 style="color:var(--cyan); letter-spacing: 5px;">CENTRO DE CONTROL PREMIUM</h1>
+        <h1 style="color:var(--cyan); letter-spacing: 5px;">CENTRO DE CONTROL LOBO STORE</h1>
     </div>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
         <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
-        <div class="tab" id="tab-c" onclick="showTab('c')">CONFIG ⚙️</div>
+        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
+        <div class="tab" id="tab-c" onclick="showTab('c')">CONFIG BOT ⚙️</div>
     </div>
 
+    <!-- SECCIÓN PRODUCTOS -->
     <div id="sec-p">
         <div class="form-section">
-            <h3 id="p-title">NUEVO PRODUCTO</h3>
+            <h3 style="color:var(--cyan)">NUEVO PRODUCTO</h3>
             <input type="hidden" id="p-id">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                 <input type="text" id="p-name" placeholder="Nombre">
                 <input type="number" id="p-price" placeholder="Precio">
             </div>
-            <button class="action-btn btn-edit" style="width:100%" onclick="saveProduct()">GUARDAR PRODUCTO</button>
+            <button class="action-btn btn-edit" style="width:100%" onclick="saveProduct()">GUARDAR</button>
         </div>
         <table id="p-table"><thead><tr><th>Producto</th><th>Precio</th><th>Acción</th></tr></thead><tbody id="p-list"></tbody></table>
     </div>
 
+    <!-- SECCIÓN USUARIOS -->
     <div id="sec-u" class="hidden">
         <div class="form-section">
-            <h3 id="u-title">EDITAR DATOS DE CLIENTE</h3>
+            <h3 id="u-title" style="color:var(--cyan)">EDITAR CLIENTE</h3>
             <input type="hidden" id="u-key">
             <input type="hidden" id="u-old-phone">
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px">
                 <input type="text" id="u-name" placeholder="Nombre Personalizado">
                 <input type="number" id="u-phone" placeholder="Número de Contacto">
             </div>
-            <button class="action-btn btn-edit" style="width:100%" onclick="saveUser()">ACTUALIZAR DATOS Y CONEXIÓN</button>
+            <button class="action-btn btn-edit" style="width:100%" onclick="saveUser()">ACTUALIZAR FICHA</button>
         </div>
-        <table><thead><tr><th>Cliente</th><th>Número</th><th>Última Vez</th><th>Acción</th></tr></thead><tbody id="u-list"></tbody></table>
+        <table><thead><tr><th>Cliente</th><th>Número</th><th>WhatsApp ID</th><th>Acción</th></tr></thead><tbody id="u-list"></tbody></table>
     </div>
 
+    <!-- SECCIÓN MENSAJES -->
+    <div id="sec-m" class="hidden">
+        <h3 style="color:var(--cyan)">SOLICITUDES DE ASESORÍA</h3>
+        <table><thead><tr><th>Fecha</th><th>Usuario</th><th>Número</th><th>Acción</th></tr></thead><tbody id="m-list"></tbody></table>
+    </div>
+
+    <!-- SECCIÓN CONFIG BOT -->
     <div id="sec-c" class="hidden" style="text-align:center">
-        <button class="action-btn btn-delete" style="width:100%; padding:20px" onclick="resetBot()">🔥 RESETEAR SESIÓN DEL BOT</button>
+        <button class="action-btn btn-delete" style="width:100%; padding:20px" onclick="resetBot()">🔥 CERRAR SESIÓN BOT (LOGOUT)</button>
     </div>
 </div>
 
@@ -79,85 +89,74 @@
     let products = {}; let users = {};
 
     function showTab(t) {
-        ['p','u','c'].forEach(s => { document.getElementById('sec-'+s).classList.add('hidden'); document.getElementById('tab-'+s).classList.remove('active'); });
+        ['p','u','m','c'].forEach(s => { document.getElementById('sec-'+s).classList.add('hidden'); document.getElementById('tab-'+s).classList.remove('active'); });
         document.getElementById('sec-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('active');
     }
 
+    // PRODUCTOS
     db.ref("products").on("value", snap => {
         const list = document.getElementById("p-list"); list.innerHTML = "";
         snap.forEach(child => {
             const p = child.val(); products[child.key] = p;
-            list.innerHTML += `<tr><td>${p.name}</td><td>$${p.price}</td><td><button class='action-btn btn-edit' onclick='editP("${child.key}")'>E</button></td></tr>`;
+            list.innerHTML += `<tr><td>${p.name}</td><td>$${p.price}</td><td><button class='action-btn btn-edit' onclick='prepareProductEdit("${child.key}")'>E</button></td></tr>`;
         });
     });
 
+    // USUARIOS
     db.ref("bot_users").on("value", snap => {
         const list = document.getElementById("u-list"); list.innerHTML = "";
         users = {};
         snap.forEach(child => {
             const u = child.val(); const key = child.key; users[key] = u;
-            // Unificar timestamps para visualización
-            const lastTime = u.last_seen || u.lastSeen || Date.now();
-            const dateStr = new Date(lastTime).toLocaleString();
-            const finalNum = u.number || u.phone || key;
+            const contactNum = u.number || u.phone || '-';
+            const waLink = `https://wa.me/${contactNum.toString().replace(/\D/g,'')}`;
 
             list.innerHTML += `<tr>
                 <td><strong>${u.name || u.whatsapp_name || 'Nuevo'}</strong></td>
-                <td>${finalNum}</td>
-                <td><small>${dateStr}</small></td>
+                <td>${contactNum}</td>
+                <td><small style="color:grey">${key}</small></td>
                 <td>
                     <button class='action-btn btn-edit' onclick='prepareUser("${key}")'>EDITAR</button>
-                    <a href="https://wa.me/${finalNum.toString().replace(/\D/g,'')}" class='btn-wa' target="_blank">WA</a>
+                    <a href="${waLink}" class='btn-wa' target="_blank">WA</a>
                 </td>
             </tr>`;
+        });
+    });
+
+    // MENSAJES
+    db.ref("talk_requests").on("value", snap => {
+        const list = document.getElementById("m-list"); list.innerHTML = "";
+        snap.forEach(child => {
+            const m = child.val(); const date = new Date(m.timestamp).toLocaleString();
+            const contactNum = m.number || m.whatsapp_id || '-';
+            list.innerHTML += `<tr><td>${date}</td><td>${m.name}</td><td>${contactNum}</td><td>
+                <a href="https://wa.me/${contactNum.toString().replace(/\D/g,'')}" class="btn-wa" target="_blank">HABLAR</a>
+                <button class="action-btn btn-delete" onclick="db.ref('talk_requests/${child.key}').remove()">X</button>
+            </td></tr>`;
         });
     });
 
     function prepareUser(key) {
         const u = users[key];
         document.getElementById("u-key").value = key;
-        document.getElementById("u-old-phone").value = u.number || u.phone || key;
+        document.getElementById("u-old-phone").value = u.number || u.phone || "";
         document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
-        document.getElementById("u-phone").value = u.number || u.phone || key;
+        document.getElementById("u-phone").value = u.number || u.phone || "";
         document.getElementById("u-title").innerText = "MODIFICANDO: " + (u.name || u.whatsapp_name);
         window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     async function saveUser() {
         const key = document.getElementById("u-key").value;
-        const oldPhone = document.getElementById("u-old-phone").value;
-        const newName = document.getElementById("u-name").value.trim();
-        const newPhone = document.getElementById("u-phone").value.trim();
-
+        const nN = document.getElementById("u-name").value; const nP = document.getElementById("u-phone").value;
         if(!key) return alert("Selecciona un usuario");
-
-        try {
-            const snapshot = await db.ref("bot_users/" + key).once("value");
-            let data = snapshot.val() || {};
-
-            // Actualizar campos clave
-            data.name = newName;
-            data.number = newPhone;
-            data.phone = newPhone;
-            data.last_seen = data.last_seen || data.lastSeen || Date.now(); // Mantener el tiempo
-            delete data.lastSeen; // Limpiar campo viejo
-
-            if (newPhone !== oldPhone) {
-                // Mover todo el objeto al nuevo nodo
-                await db.ref("bot_users/" + newPhone).set(data);
-                await db.ref("bot_users/" + key).remove();
-            } else {
-                // Actualizar en el mismo nodo
-                await db.ref("bot_users/" + key).set(data);
-            }
-            alert("¡Sincronización exitosa con Bot y Timestamps!");
-            document.getElementById("u-key").value = "";
-        } catch (e) { alert("Error: " + e.message); }
+        await db.ref("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
+        alert("¡Datos y Link sincronizados!");
     }
 
-    async function resetBot() { if(confirm("¿RESETEAR BOT?")) await db.ref("bot_control/command").set({action:"LOGOUT", timestamp:Date.now()}); }
-    function editP(id) {} // Lógica similar
-    async function saveProduct() {} // Lógica similar
+    async function resetBot() { if(confirm("¿RESET?")) await db.ref("bot_control/command").set({action:"LOGOUT", timestamp:Date.now()}); }
+    function prepareProductEdit(id) {} // ...
+    async function saveProduct() {} // ...
 </script>
 </body>
 </html>
