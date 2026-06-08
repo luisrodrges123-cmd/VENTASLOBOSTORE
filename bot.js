@@ -9,7 +9,7 @@ const { Boom } = require('@hapi/boom');
 const qrcodeTerminal = require('qrcode-terminal');
 const pino = require('pino');
 const { initializeApp } = require('firebase/app');
-const { getDatabase, ref, push, update, onValue, set } = require('firebase/database');
+const { getDatabase, ref, push, update, onValue, set, get } = require('firebase/database');
 const fs = require('fs');
 
 // 🐺 CONFIGURACIÓN GLOBAL
@@ -72,9 +72,18 @@ async function connectToWhatsApp() {
         const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
         const lowerText = text.toLowerCase();
 
-        // --- REGISTRO/ACTUALIZACIÓN DE USUARIO ---
+        // --- OBTENER DATOS ACTUALIZADOS DESDE FIREBASE ---
         const userRef = ref(db, `bot_users/${userJid}`);
-        // No sobreescribir el nombre si el admin ya le puso uno personalizado
+        let userData = {};
+        try {
+            const snapshot = await get(userRef);
+            if (snapshot.exists()) userData = snapshot.val();
+        } catch (e) {}
+
+        // Priorizar nombre editado por admin
+        const finalDisplayName = userData.name || pushName;
+
+        // Actualizar datos básicos (sin borrar los editados)
         update(userRef, {
             whatsapp_name: pushName,
             whatsapp_number: userJid,
@@ -86,7 +95,7 @@ async function connectToWhatsApp() {
             catch (e) { await sock.sendMessage(jid, { text: caption }); }
         };
 
-        // --- FLUJO CAPTURA DE DATOS (NUEVO NÚMERO) ---
+        // --- FLUJO CAPTURA DE DATOS ---
         if (sessions[from] === 'waiting_contact_info') {
             const detected = extractPhoneNumber(text);
             if (!detected) {
@@ -95,23 +104,24 @@ async function connectToWhatsApp() {
             }
             delete sessions[from];
 
-            // GUARDAR EL NUEVO NÚMERO EN EL USUARIO
             await update(userRef, {
-                name: pushName, // Guardar nombre proporcionado o actual
-                number: detected, // EL NUEVO NÚMERO
+                name: finalDisplayName,
+                number: detected,
                 phone: detected
             });
 
-            await sock.sendMessage(from, { text: `✅ ¡Datos actualizados! He guardado tu número: *${detected}*. El Administrador te contactará pronto. 🐺` });
-            await sock.sendMessage(ADMIN_NUMBER, { text: `🐺 *AVISO ACTUALIZADO*\n\nUsuario: ${pushName}\nNuevo Número: ${detected}\nWhatsApp: wa.me/${userJid}` });
+            await sock.sendMessage(from, { text: `✅ ¡Hola *${finalDisplayName}*! He guardado tu número: *${detected}*. El Administrador te contactará pronto. 🐺` });
+            await sock.sendMessage(ADMIN_NUMBER, {
+                text: `🐺 *AVISO DE ATENCIÓN*\n\nUsuario: ${finalDisplayName}\nNúmero de contacto: ${detected}\nLink WhatsApp: wa.me/${userJid}`
+            });
 
-            try { await push(ref(db, 'talk_requests'), { name: pushName, number: detected, whatsapp: userJid, timestamp: Date.now() }); } catch (e) {}
+            try { await push(ref(db, 'talk_requests'), { name: finalDisplayName, number: detected, whatsapp: userJid, timestamp: Date.now() }); } catch (e) {}
             return;
         }
 
         // --- COMANDOS ---
         if (['hola', 'menu', 'lobo'].includes(lowerText)) {
-            await sendLobo(from, `🐺 *LOBO STORE PREMIUM* 🐺\n\nHola, bienvenido. Elige una opción:\n\n1️⃣ Catálogo\n4️⃣ Hablar con Administrador (Dejar mis datos)`);
+            await sendLobo(from, `🐺 *LOBO STORE PREMIUM* 🐺\n\nHola *${finalDisplayName}*, bienvenido. Elige una opción:\n\n1️⃣ Catálogo\n4️⃣ Hablar con Administrador (Dejar mis datos)`);
             return;
         }
 
