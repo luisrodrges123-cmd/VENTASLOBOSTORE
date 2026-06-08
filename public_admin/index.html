@@ -208,11 +208,47 @@
         const list = document.getElementById("u-list-body"); list.innerHTML = "";
         snap.forEach((child) => {
             const u = child.val();
-            list.innerHTML += `<tr><td>${u.pushName || 'Anonimo'}</td><td>${u.number}</td><td>
-                <a href="https://wa.me/${u.number}" class="btn-msg" target="_blank">WHATSAPP</a>
-            </td></tr>`;
+            const key = child.key;
+            list.innerHTML += `<tr>
+                <td><strong>${u.name || u.pushName || 'Anonimo'}</strong></td>
+                <td>${u.number || key}</td>
+                <td>
+                    <button class="action-btn btn-edit" onclick="editUser('${key}', '${u.name || u.pushName || ''}', '${u.number || key}')">EDITAR</button>
+                    <a href="https://wa.me/${u.number || key}" class="btn-msg" target="_blank">WHATSAPP</a>
+                    <button class="action-btn btn-delete" onclick="deleteItem('bot_users/${key}')">X</button>
+                </td>
+            </tr>`;
         });
     });
+
+    async function editUser(key, oldName, oldNumber) {
+        const newName = prompt("Nuevo nombre para el usuario:", oldName);
+        const newNumber = prompt("Nuevo número para el usuario (solo números):", oldNumber);
+
+        if (newName !== null && newNumber !== null) {
+            try {
+                // Si el número cambió, creamos un nuevo nodo y borramos el viejo para mantener la estructura
+                if (newNumber !== oldNumber) {
+                    const data = (await db.ref("bot_users/" + key).once("value")).val();
+                    data.name = newName;
+                    data.number = newNumber;
+                    data.phone = newNumber; // para bot.js
+
+                    await db.ref("bot_users/" + newNumber).set(data);
+                    await db.ref("bot_users/" + key).remove();
+                } else {
+                    // Solo actualizar nombre
+                    await db.ref("bot_users/" + key).update({
+                        name: newName,
+                        pushName: newName
+                    });
+                }
+                alert("Usuario actualizado correctamente.");
+            } catch (e) {
+                alert("Error: " + e.message);
+            }
+        }
+    }
 
     async function save() {
         const id = document.getElementById("edit-id").value;

@@ -34,13 +34,15 @@
 
         .header { text-align: center; margin-bottom: 40px; }
         .logo { width: 150px; height: 150px; border-radius: 20px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); margin-bottom: 20px; transition: 0.5s; }
+        .logo:hover { transform: scale(1.05) rotate(5deg); }
 
         .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; flex-wrap: wrap; }
         .tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: bold; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.85rem; min-width: 120px; }
         .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 15px var(--neon-purple); }
 
         .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
-        input, textarea { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; }
+        input, textarea { width: 100%; padding: 14px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; transition: 0.3s; }
+        input:focus, textarea:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 10px rgba(0,242,255,0.2); }
 
         .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; font-size: 0.8rem; }
         .btn-edit { background: var(--neon-cyan); color: black; margin-right: 5px; }
@@ -49,8 +51,12 @@
         .btn-danger { background: linear-gradient(45deg, #FF3B30, #990000); color: white; width: 100%; padding: 20px; font-size: 1rem; border-radius: 15px; margin-top: 20px; border: none; cursor: pointer; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; }
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 8px; margin-top: 20px; }
-        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.75rem; text-transform: uppercase; }
+        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; }
         td { padding: 15px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr td:first-child { border-left: 1px solid rgba(255,255,255,0.05); border-radius: 12px 0 0 12px; }
+        tr td:last-child { border-right: 1px solid rgba(255,255,255,0.05); border-radius: 0 12px 12px 0; }
+
+        .stock-badge { background: rgba(0, 242, 255, 0.1); color: var(--neon-cyan); padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; }
         .hidden { display: none; }
     </style>
 </head>
@@ -59,7 +65,7 @@
 <div class="container">
     <div class="header">
         <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
-            <img src="https://i.postimg.cc/JyW9Jt8R/logo-lobo.png" alt="Logo" class="logo">
+            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo" class="logo">
         </a>
         <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - CONTROL CENTER</h1>
     </div>
@@ -183,16 +189,49 @@
         const list = document.getElementById("u-list-body"); list.innerHTML = "";
         snap.forEach((child) => {
             const u = child.val();
-            list.innerHTML += `<tr><td>${u.pushName || 'Anonimo'}</td><td>${u.number}</td><td><a href="https://wa.me/${u.number}" class="btn-msg" target="_blank">WHATSAPP</a></td></tr>`;
+            const key = child.key;
+            list.innerHTML += `<tr>
+                <td><strong>${u.name || u.pushName || 'Anonimo'}</strong></td>
+                <td>${u.number || key}</td>
+                <td>
+                    <button class="action-btn btn-edit" onclick="editUser('${key}', '${u.name || u.pushName || ''}', '${u.number || key}')">EDITAR</button>
+                    <a href="https://wa.me/${u.number || key}" class="btn-msg" target="_blank">WHATSAPP</a>
+                    <button class="action-btn btn-delete" onclick="deleteItem('bot_users/${key}')">X</button>
+                </td>
+            </tr>`;
         });
     });
+
+    async function editUser(key, oldName, oldNumber) {
+        const newName = prompt("Nuevo nombre para el usuario:", oldName);
+        const newNumber = prompt("Nuevo número para el usuario (solo números):", oldNumber);
+
+        if (newName !== null && newNumber !== null) {
+            try {
+                if (newNumber !== oldNumber) {
+                    const data = (await db.ref("bot_users/" + key).once("value")).val();
+                    data.name = newName;
+                    data.number = newNumber;
+                    data.phone = newNumber;
+                    await db.ref("bot_users/" + newNumber).set(data);
+                    await db.ref("bot_users/" + key).remove();
+                } else {
+                    await db.ref("bot_users/" + key).update({ name: newName, pushName: newName });
+                }
+                alert("Usuario actualizado.");
+            } catch (e) { alert(e.message); }
+        }
+    }
 
     async function save() {
         const id = document.getElementById("edit-id").value;
         const data = { name: document.getElementById("name").value.trim(), price: parseFloat(document.getElementById("price").value) || 0, category: document.getElementById("category").value.trim(), stock: parseInt(document.getElementById("stock").value) || 0, description: document.getElementById("desc").value.trim(), imageUrl: document.getElementById("img").value.trim() };
-        if(id) await db.ref("products/" + id).set(data);
-        else await db.ref("products").push(data);
-        alert("¡Éxito!"); resetForm();
+        if(!data.name) return alert("Nombre obligatorio");
+        try {
+            if(id) await db.ref("products/" + id).set(data);
+            else await db.ref("products").push(data);
+            alert("¡Éxito!"); resetForm();
+        } catch(e) { alert(e.message); }
     }
 
     function prepareEdit(id) {
@@ -204,6 +243,7 @@
         document.getElementById("stock").value = p.stock || 0;
         document.getElementById("desc").value = p.description || "";
         document.getElementById("img").value = p.imageUrl || "";
+        document.getElementById("form-title").innerText = "EDITANDO: " + p.name;
         document.getElementById("btn-cancel").classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
