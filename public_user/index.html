@@ -476,7 +476,6 @@
 
         snap.forEach((child) => {
             const p = child.val();
-            const isVip = p.isVip === true;
 
             // FILTRO ESTRICTO: Si no hay stock o es 0, no mostrar
             let currentStock = 0;
@@ -490,18 +489,13 @@
 
             const productCard = document.createElement("div");
             productCard.className = "product-card";
-            if (isVip) {
-                productCard.style.border = "2px solid var(--neon-purple)";
-                productCard.style.boxShadow = "0 0 20px rgba(188, 19, 254, 0.2)";
-            }
             const imgUrl = p.imageUrl || "https://via.placeholder.com/400x300?text=Premium+Item";
 
             productCard.innerHTML = `
-                ${isVip ? '<div style="position:absolute; top:10px; right:10px; background:var(--neon-purple); color:white; padding:5px 10px; border-radius:8px; font-weight:bold; font-size:0.7rem; z-index:10;">EDICIÓN VIP 💎</div>' : ''}
                 <img src=\"${imgUrl}\" alt=\"${p.name}\" class=\"product-image\">
                 <div class=\"product-info\">
                     <span class=\"product-category\">${p.category || 'EXCLUSIVO'}</span>
-                    <h3 class=\"product-name\">${p.name} ${isVip ? '💎' : ''}</h3>
+                    <h3 class=\"product-name\">${p.name}</h3>
                     <div class=\"product-price\">$${p.price}</div>
 
                     <button class=\"btn-toggle-info\" onclick=\"toggleDesc('${child.key}')\" id=\"btn-desc-${child.key}\">VER DETALLES 🔍</button>

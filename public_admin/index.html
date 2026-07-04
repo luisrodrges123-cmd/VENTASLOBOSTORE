@@ -114,10 +114,6 @@
                 <input type="text" id="p-category" placeholder="Categoría">
                 <input type="number" id="p-stock" placeholder="Stock Actual">
                 <input type="text" id="p-img" placeholder="Enlace de Imagen">
-                <label style="display: flex; align-items: center; gap: 10px; background: rgba(188, 19, 254, 0.1); padding: 10px; border-radius: 12px; border: 1px solid var(--neon-purple); cursor: pointer;">
-                    <input type="checkbox" id="p-vip" style="width: 20px; height: 20px; margin: 0;">
-                    <span style="color: var(--neon-purple); font-weight: 900; font-size: 0.8rem;">PRODUCTO VIP 💎</span>
-                </label>
             </div>
             <textarea id="p-desc" placeholder="Características técnicas..." style="width:100%; height:80px; margin-bottom:20px; background:#0a0a0a; color:white; border-radius:12px; padding:15px; border:1px solid #333;"></textarea>
             <button class="btn-main" onclick="saveProduct()">GUARDAR ARTÍCULO</button>
@@ -299,13 +295,12 @@
         snap.forEach((child) => {
             const p = child.val(); productsCache[child.key] = p;
             const stockValue = parseInt(p.stock) || 0;
-            const isVip = p.isVip === true;
             const stockDisplay = stockValue > 0
                 ? `${stockValue} u.`
                 : `<span class="badge" style="background:var(--danger); color:white">AGOTADO</span>`;
 
             list.innerHTML += `<tr>
-                <td><strong>${p.name}</strong> ${isVip ? '💎' : ''}</td>
+                <td><strong>${p.name}</strong></td>
                 <td><span class="badge badge-cyan">$${p.price}</span></td>
                 <td>${stockDisplay}</td>
                 <td class="action-group">
@@ -324,8 +319,7 @@
             category: document.getElementById("p-category").value.trim(),
             stock: parseInt(document.getElementById("p-stock").value) || 0,
             description: document.getElementById("p-desc").value.trim(),
-            imageUrl: document.getElementById("p-img").value.trim(),
-            isVip: document.getElementById("p-vip").checked
+            imageUrl: document.getElementById("p-img").value.trim()
         };
         if(!data.name) return alert("Nombre obligatorio");
         if(id) await db.ref("products/" + id).set(data);
@@ -342,7 +336,6 @@
         document.getElementById("p-stock").value = p.stock || 0;
         document.getElementById("p-desc").value = p.description || "";
         document.getElementById("p-img").value = p.imageUrl || "";
-        document.getElementById("p-vip").checked = p.isVip || false;
         document.getElementById("p-form-title").innerText = "EDITANDO: " + p.name;
         document.getElementById("p-btn-cancel").classList.remove("hidden");
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -350,8 +343,7 @@
 
     function resetProductForm() {
         document.getElementById("p-id").value = "";
-        document.querySelectorAll('#sec-p input:not([type="checkbox"]), #sec-p textarea').forEach(i => i.value = "");
-        document.getElementById("p-vip").checked = false;
+        document.querySelectorAll('#sec-p input, #sec-p textarea').forEach(i => i.value = "");
         document.getElementById("p-form-title").innerText = "Gestión de Inventario";
         document.getElementById("p-btn-cancel").classList.add("hidden");
     }
