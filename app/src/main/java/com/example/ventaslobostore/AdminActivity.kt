@@ -168,13 +168,35 @@ class AdminActivity : AppCompatActivity() {
     }
 
     private fun showStatusDialog(order: Order) {
-        val statuses = arrayOf("PENDIENTE", "EN PROCESO", "ENVIADO", "COMPLETADO", "CANCELADO")
+        val statuses = arrayOf("PENDIENTE", "EN PROCESO", "COMPRADO", "CANCELADO")
         AlertDialog.Builder(this, R.style.Theme_VENTASLOBOSTORE_Dialog)
             .setTitle("Actualizar Estado")
             .setItems(statuses) { _, which ->
+                val newStatus = statuses[which]
                 lifecycleScope.launch {
-                    order.id?.let { repository.updateOrderStatus(it, statuses[which]) }
-                    loadOrders()
+                    order.id?.let { id ->
+                        // Lógica de descuento de stock si es COMPRADO
+                        if (newStatus == "COMPRADO") {
+                            val productId = order.productId
+                            if (productId != null) {
+                                val article = repository.getArticle(productId)
+                                article?.let { art ->
+                                    val buyQty = order.quantity
+                                    if (art.stock >= buyQty) {
+                                        val newStock = art.stock - buyQty
+                                        repository.updateArticle(art.copy(stock = newStock))
+                                        Toast.makeText(this@AdminActivity, "Stock descontado: -$buyQty", Toast.LENGTH_SHORT).show()
+                                    } else {
+                                        Toast.makeText(this@AdminActivity, "Atención: Stock insuficiente", Toast.LENGTH_LONG).show()
+                                    }
+                                }
+                            }
+                        }
+                        
+                        repository.updateOrderStatus(id, newStatus)
+                        loadOrders()
+                        Toast.makeText(this@AdminActivity, "Estado actualizado a $newStatus", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .show()

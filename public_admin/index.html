@@ -78,7 +78,15 @@
         .hidden { display: none; }
     </style>
 </head>
-<body>
+<body style="position: relative;">
+
+    <!-- Overlay invisible para forzar interacción y sonido -->
+    <div id="audio-starter" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; cursor: pointer; background: rgba(0,0,0,0.01);">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--neon-cyan); font-weight: bold; text-align: center; pointer-events: none;">
+            <div style="font-size: 2rem;">🐺</div>
+            <p>TOCA AQUÍ PARA INICIAR SISTEMA IA</p>
+        </div>
+    </div>
 
 <div class="container">
     <div class="header">
@@ -92,7 +100,7 @@
     <audio id="notif-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsNotificationSoundss.wav" preload="auto"></audio>
     <audio id="status-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsStartup.wav" preload="auto"></audio>
     <audio id="keyboard-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/teclado.wav" preload="auto"></audio>
-    <audio id="welcome-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/logintrick%20(1)_join%20(2).mp3" preload="auto"></audio>
+    <audio id="welcome-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/%5BJarvis%20(Latin%20American%20Spanish)%5D%F0%9F%8E%99%EF%B8%8F%20_......ito!_%20(1).mp3" preload="auto"></audio>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
@@ -470,20 +478,49 @@
         }
     }
 
-    // Desbloqueo agresivo de audio al primer clic o toque
-    document.addEventListener('mousedown', () => {
-        const audios = ['notif-sound', 'status-sound', 'keyboard-sound', 'welcome-sound'];
-        audios.forEach(id => {
+    // Desbloqueo agresivo y forzado de audio
+    async function unlockAllAudio() {
+        const starter = document.getElementById("audio-starter");
+        if (starter) starter.style.display = "none";
+
+        const sounds = ['notif-sound', 'status-sound', 'keyboard-sound', 'welcome-sound'];
+
+        // Crear un contexto de audio para "despertar" el motor de sonido del navegador
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            const ctx = new AudioContext();
+            if (ctx.state === 'suspended') await ctx.resume();
+        }
+
+        for (const id of sounds) {
             const a = document.getElementById(id);
             if (a) {
-                if (id === 'welcome-sound') {
-                    a.play().catch(e => console.log("Welcome error:", e));
-                } else {
-                    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+                try {
+                    a.muted = false;
+                    if (id === 'welcome-sound') {
+                        a.currentTime = 0;
+                        await a.play();
+                    } else {
+                        // "Priming": reproducir y pausar rápidamente para habilitar
+                        await a.play();
+                        a.pause();
+                        a.currentTime = 0;
+                    }
+                } catch (e) {
+                    console.log(`Error forzando ${id}:`, e);
                 }
             }
-        });
-    }, { once: true });
+        }
+        // Limpiar eventos
+        ['mousedown', 'click', 'touchstart', 'keydown'].forEach(ev =>
+            document.removeEventListener(ev, unlockAllAudio)
+        );
+    }
+
+    // Escuchar cualquier interacción para forzar el inicio
+    ['mousedown', 'click', 'touchstart', 'keydown'].forEach(ev =>
+        document.addEventListener(ev, unlockAllAudio, { once: false })
+    );
 
     document.addEventListener('keydown', () => playKeyboardSound());
     window.addEventListener('focus', () => playKeyboardSound());

@@ -26,8 +26,8 @@ class OrderAdapter(
         val order = orders[position]
         holder.binding.tvOrderUser.text = order.username.uppercase()
         holder.binding.tvOrderPhone.text = "TEL: ${order.phone}"
-        holder.binding.tvOrderProduct.text = "PROD: ${order.productName}"
-        holder.binding.tvOrderPrice.text = "$${order.price}"
+        holder.binding.tvOrderProduct.text = "PROD: ${order.name}"
+        holder.binding.tvOrderPrice.text = "Cant: ${order.quantity} | Total: $${order.totalPrice}"
         holder.binding.chipStatus.text = order.status
         
         val date = Date(order.timestamp)

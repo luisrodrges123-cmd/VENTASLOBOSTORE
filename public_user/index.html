@@ -325,11 +325,19 @@
         }
     </style>
 </head>
-<body>
+<body style="position: relative;">
+
+    <!-- Overlay invisible para forzar interacción y sonido -->
+    <div id="audio-starter" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; cursor: pointer; background: rgba(0,0,0,0.01);">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--neon-cyan); font-weight: bold; text-align: center; pointer-events: none;">
+            <div style="font-size: 2rem;">🐺</div>
+            <p>TOCA EN CUALQUIER LUGAR PARA INICIAR EXPERIENCIA ELITE</p>
+        </div>
+    </div>
 
     <!-- Audios de Notificación Premium -->
     <audio id="keyboard-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/teclado.wav" preload="auto"></audio>
-    <audio id="welcome-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/logintrick%20(1)_join%20(2).mp3" preload="auto"></audio>
+    <audio id="welcome-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/%5BJarvis%20(Latin%20American%20Spanish)%5D%F0%9F%90%BA%20_%C2%A1......cia!_.mp3" preload="auto"></audio>
 
 <div class="navbar">
     <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
@@ -456,14 +464,46 @@
         }
     }
 
-    // Desbloqueo de audio
-    document.addEventListener('mousedown', () => {
-        const keyboard = document.getElementById("keyboard-sound");
-        if (keyboard) { keyboard.play().then(() => { keyboard.pause(); keyboard.currentTime = 0; }).catch(() => {}); }
+    // Desbloqueo maestro forzado de audio
+    async function forceUnlockAudio() {
+        const starter = document.getElementById("audio-starter");
+        if (starter) starter.style.display = "none";
 
         const welcome = document.getElementById("welcome-sound");
-        if (welcome) { welcome.play().catch(e => console.log("Bienvenida bloqueada:", e)); }
-    }, { once: true });
+        const keyboard = document.getElementById("keyboard-sound");
+
+        // Activar el motor de audio del navegador
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+            const ctx = new AudioContext();
+            if (ctx.state === 'suspended') await ctx.resume();
+        }
+
+        try {
+            if (welcome) {
+                welcome.muted = false;
+                await welcome.play();
+                console.log("Bienvenida forzada con éxito");
+            }
+            if (keyboard) {
+                keyboard.muted = false;
+                await keyboard.play();
+                keyboard.pause();
+                keyboard.currentTime = 0;
+            }
+        } catch (e) {
+            console.log("Fallo el forzado inicial:", e);
+        }
+
+        // Remover disparadores
+        ['mousedown', 'click', 'touchstart'].forEach(ev =>
+            document.removeEventListener(ev, forceUnlockAudio)
+        );
+    }
+
+    ['mousedown', 'click', 'touchstart'].forEach(ev =>
+        document.addEventListener(ev, forceUnlockAudio)
+    );
 
     document.addEventListener('keydown', () => playKeyboardSound());
     window.addEventListener('focus', () => playKeyboardSound());

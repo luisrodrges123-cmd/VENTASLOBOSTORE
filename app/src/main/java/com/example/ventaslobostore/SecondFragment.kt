@@ -71,14 +71,22 @@ class SecondFragment : Fragment() {
             .setPositiveButton("Finalizar por WhatsApp") { _, _ ->
                 val name = dialogBinding.etCustomerName.text.toString()
                 val phone = dialogBinding.etCustomerPhone.text.toString()
+                val qtyString = dialogBinding.etCustomerQuantity.text.toString()
+                val quantity = qtyString.toIntOrNull() ?: 1
                 
                 if (name.isNotEmpty() && phone.isNotEmpty()) {
+                    val totalPrice = article.price * quantity
                     val order = Order(
                         username = name,
                         phone = phone,
-                        productName = article.name,
+                        name = article.name,
                         price = article.price,
-                        imageUrl = article.imageUrl
+                        imageUrl = article.imageUrl,
+                        productId = article.id,
+                        quantity = quantity,
+                        totalPrice = totalPrice,
+                        description = article.description,
+                        category = article.category
                     )
                     
                     lifecycleScope.launch {
@@ -101,8 +109,10 @@ class SecondFragment : Fragment() {
             *Cliente:* ${order.username}
             *Teléfono:* ${order.phone}
             
-            *Producto:* ${order.productName}
-            *Precio:* $${order.price}
+            *Producto:* ${order.name}
+            *Cantidad:* ${order.quantity}
+            *Precio Unitario:* $${order.price}
+            *TOTAL:* $${order.totalPrice}
             
             *Foto del Producto:*
             ${order.imageUrl}
