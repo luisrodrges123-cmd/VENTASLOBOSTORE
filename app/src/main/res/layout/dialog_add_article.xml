@@ -90,5 +90,23 @@
                 android:textColor="@color/white" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="Stock Disponible"
+            app:boxStrokeColor="@color/neon_cyan"
+            app:hintTextColor="@color/neon_cyan"
+            app:startIconDrawable="@android:drawable/ic_input_add">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etStock"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number"
+                android:textColor="@color/white" />
+        </com.google.android.material.textfield.TextInputLayout>
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

@@ -57,12 +57,16 @@ class FirstFragment : Fragment() {
     private fun loadArticles() {
         Log.d("FirstFragment", "Loading articles...")
         viewLifecycleOwner.lifecycleScope.launch {
-            val articles = articleRepository.getArticles()
-            Log.d("FirstFragment", "Articles loaded: ${articles.size}")
-            if (articles.isEmpty()) {
-                android.widget.Toast.makeText(requireContext(), "No hay productos disponibles", android.widget.Toast.LENGTH_SHORT).show()
+            val allArticles = articleRepository.getArticles()
+            // Filtrar artículos: Solo mostrar si stock > 0
+            val availableArticles = allArticles.filter { it.stock > 0 }
+            
+            Log.d("FirstFragment", "Articles loaded: ${availableArticles.size} de ${allArticles.size}")
+            
+            if (availableArticles.isEmpty()) {
+                android.widget.Toast.makeText(requireContext(), "No hay productos con stock disponible", android.widget.Toast.LENGTH_SHORT).show()
             }
-            articleAdapter.updateArticles(articles)
+            articleAdapter.updateArticles(availableArticles)
         }
     }
 

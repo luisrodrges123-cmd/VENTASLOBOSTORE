@@ -16,3 +16,6 @@ local.properties
 auth_info_baileys/
 node_modules/
 .firebase/
+logs/
+*.log
+config.json

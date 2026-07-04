@@ -118,6 +118,7 @@ class AdminActivity : AppCompatActivity() {
             dialogBinding.etPrice.setText(it.price.toString())
             dialogBinding.etDescription.setText(it.description)
             dialogBinding.etImageUrl.setText(it.imageUrl)
+            dialogBinding.etStock.setText(it.stock.toString())
         }
 
         builder.setPositiveButton("Guardar") { _, _ ->
@@ -125,13 +126,15 @@ class AdminActivity : AppCompatActivity() {
             val price = dialogBinding.etPrice.text.toString().toDoubleOrNull() ?: 0.0
             val description = dialogBinding.etDescription.text.toString()
             val imageUrl = dialogBinding.etImageUrl.text.toString()
+            val stock = dialogBinding.etStock.text.toString().toIntOrNull() ?: 0
 
             val newArticle = Article(
                 id = article?.id,
                 name = name,
                 price = price,
                 description = description,
-                imageUrl = imageUrl
+                imageUrl = imageUrl,
+                stock = stock
             )
 
             lifecycleScope.launch {

@@ -7,10 +7,12 @@
     "start": "node bot.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.5.0",
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
     "express": "^4.22.2",
     "firebase": "^10.7.1",
+    "node-cache": "^5.1.2",
     "pino": "^8.16.2",
     "qrcode": "^1.5.4",
     "qrcode-terminal": "^0.12.0"

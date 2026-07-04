@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA PREMIUM - Lobo Store Control</title>
+    <title>CENTRO DE CONTROL - Lobo Store</title>
     <style>
         :root {
             --neon-cyan: #00F2FF;
@@ -24,10 +24,11 @@
             margin: 0; padding: 20px;
             background: radial-gradient(circle at top right, #1a1a1a, #050505);
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px; margin: auto;
+            max-width: 1250px; margin: auto;
             background: var(--dark-card); padding: 40px;
             border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
@@ -39,13 +40,13 @@
         .logo:hover { transform: scale(1.05) rotate(5deg); }
 
         .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; flex-wrap: wrap; }
-        .tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; min-width: 120px; }
+        .tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; min-width: 130px; }
         .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 20px var(--neon-purple); }
 
         .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
         .form-section h3 { margin-top: 0; margin-bottom: 20px; color: var(--neon-cyan); font-size: 1.1rem; text-transform: uppercase; }
 
-        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
         input, textarea { width: 100%; padding: 15px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 0.9rem; transition: 0.3s; }
         input:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 10px rgba(0,242,255,0.2); }
 
@@ -54,19 +55,25 @@
 
         table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
         th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; }
-        td { padding: 20px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        td { padding: 18px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
         tr td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255,255,255,0.05); }
         tr td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255,255,255,0.05); }
 
-        .action-group { display: flex; gap: 10px; }
-        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .action-group { display: flex; gap: 8px; }
+        .action-btn { padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
         .btn-edit { background: var(--neon-purple); color: white; }
         .btn-delete { background: var(--danger); color: white; }
         .btn-wa { background: var(--success); color: white; }
 
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
         .badge-cyan { background: rgba(0, 242, 255, 0.1); color: var(--neon-cyan); }
-        .badge-purple { background: rgba(188, 19, 254, 0.1); color: var(--neon-purple); }
+
+        /* Terminal Style */
+        .terminal { background: #000; color: #00ff00; font-family: 'Courier New', monospace; padding: 20px; border-radius: 15px; border: 1px solid #333; height: 500px; overflow-y: auto; font-size: 0.85rem; line-height: 1.4; box-shadow: inset 0 0 20px rgba(0,255,0,0.1); }
+        .log-entry { margin-bottom: 6px; border-bottom: 1px solid #111; padding-bottom: 4px; }
+        .log-time { color: #888; margin-right: 10px; }
+        .log-name { color: var(--neon-cyan); font-weight: bold; }
+        .log-msg { color: #fff; }
 
         .hidden { display: none; }
     </style>
@@ -78,36 +85,40 @@
         <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
             <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo" class="logo">
         </a>
-        <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - MODO PREMIUM</h1>
+        <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - MODO PREMIUM ADMIN</h1>
     </div>
+
+    <!-- Audio de Notificación Premium -->
+    <audio id="notif-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsNotificationSoundss.wav" preload="auto"></audio>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
-        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
-        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
         <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
-        <div class="tab" id="tab-c" onclick="showTab('c')">BOT CONFIG ⚙️</div>
-        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">TIENDA 🌐</div>
+        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
+        <div class="tab" id="tab-m" onclick="showTab('m')">SOLICITUDES 💬</div>
+        <div class="tab" id="tab-l" onclick="showTab('l')">LOGS 💻</div>
+        <div class="tab" id="tab-c" onclick="showTab('c')">CONFIG ⚙️</div>
+        <div class="tab" style="background:rgba(255,255,255,0.05)" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">TIENDA 🌐</div>
     </div>
 
     <!-- SECCIÓN PRODUCTOS -->
     <div id="sec-p">
         <div class="form-section">
-            <h3 id="p-form-title">GESTIÓN DE ARTÍCULOS</h3>
+            <h3 id="p-form-title">Gestión de Inventario</h3>
             <input type="hidden" id="p-id">
             <div class="input-grid">
                 <input type="text" id="p-name" placeholder="Nombre Comercial">
                 <input type="number" id="p-price" placeholder="Precio ($)">
                 <input type="text" id="p-category" placeholder="Categoría">
-                <input type="number" id="p-stock" placeholder="Stock Inicial">
-                <input type="text" id="p-img" placeholder="Enlace de la Imagen">
+                <input type="number" id="p-stock" placeholder="Stock Actual">
+                <input type="text" id="p-img" placeholder="Enlace de Imagen">
             </div>
-            <textarea id="p-desc" placeholder="Descripción y características técnicas..." style="width:100%; height:80px; margin-bottom:20px;"></textarea>
+            <textarea id="p-desc" placeholder="Características técnicas..." style="width:100%; height:80px; margin-bottom:20px; background:#0a0a0a; color:white; border-radius:12px; padding:15px; border:1px solid #333;"></textarea>
             <button class="btn-main" onclick="saveProduct()">GUARDAR ARTÍCULO</button>
-            <button class="action-btn btn-delete hidden" id="p-btn-cancel" style="width:100%; margin-top:10px;" onclick="resetProductForm()">CANCELAR EDICIÓN</button>
+            <button class="action-btn btn-delete hidden" id="p-btn-cancel" style="width:100%; margin-top:10px; padding:12px;" onclick="resetProductForm()">CANCELAR EDICIÓN</button>
         </div>
         <table>
-            <thead><tr><th>Artículo</th><th>Precio</th><th>Categoría</th><th>Stock</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Artículo</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
             <tbody id="p-list-body"></tbody>
         </table>
     </div>
@@ -115,46 +126,60 @@
     <!-- SECCIÓN USUARIOS -->
     <div id="sec-u" class="hidden">
         <div class="form-section">
-            <h3 id="u-form-title">FICHA DE CLIENTE</h3>
+            <h3 id="u-form-title">Ficha de Cliente</h3>
             <input type="hidden" id="u-key">
             <input type="hidden" id="u-old-phone">
             <div class="input-grid">
                 <input type="text" id="u-name" placeholder="Nombre Asignado">
                 <input type="number" id="u-phone" placeholder="Número Telefónico Real">
             </div>
-            <button class="btn-main" onclick="saveUser()">ACTUALIZAR DATOS</button>
-            <button class="action-btn btn-delete" style="width:100%; margin-top:10px;" onclick="resetUserForm()">CANCELAR / LIMPIAR</button>
+            <button class="btn-main" onclick="saveUser()">ACTUALIZAR DATOS DEL CLIENTE</button>
+            <button class="action-btn btn-delete" style="width:100%; margin-top:10px; padding:12px;" onclick="resetUserForm()">LIMPIAR / CANCELAR</button>
         </div>
         <table>
-            <thead><tr><th>Identidad</th><th>Número Real</th><th>WhatsApp ID</th><th>Actividad</th><th>Acciones</th></tr></thead>
+            <thead><tr><th>Nombre</th><th>Número Real</th><th>WA ID</th><th>Actividad</th><th>Acciones</th></tr></thead>
             <tbody id="u-list-body"></tbody>
         </table>
     </div>
 
     <!-- SECCIÓN PEDIDOS -->
     <div id="sec-o" class="hidden">
-        <h3 style="color:var(--neon-cyan)">ORDENES RECIBIDAS</h3>
         <table>
-            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Estado</th><th>Acción</th></tr></thead>
             <tbody id="o-list-body"></tbody>
         </table>
     </div>
 
-    <!-- SECCIÓN MENSAJES -->
+    <!-- SECCIÓN SOLICITUDES -->
     <div id="sec-m" class="hidden">
-        <h3 style="color:var(--neon-cyan)">SOLICITUDES DE ASESORÍA</h3>
         <table>
-            <thead><tr><th>Fecha / Hora</th><th>Usuario</th><th>Número</th><th>Chat</th><th>Acción</th></tr></thead>
+            <thead><tr><th>Fecha</th><th>Usuario</th><th>Número</th><th>Chat</th><th>Acción</th></tr></thead>
             <tbody id="m-list-body"></tbody>
         </table>
     </div>
 
-    <!-- SECCIÓN CONFIG BOT -->
+    <!-- SECCIÓN LOGS -->
+    <div id="sec-l" class="hidden">
+        <h3 style="color:var(--neon-cyan)">HISTORIAL DE MENSAJES (CMD WEB)</h3>
+        <div class="terminal" id="terminal-logs">
+            <div class="log-entry">🐺 Iniciando consola de monitoreo premium...</div>
+        </div>
+        <button class="action-btn btn-delete" style="margin-top:20px; width:100%; padding:15px;" onclick="clearHistory()">LIMPIAR HISTORIAL COMPLETO</button>
+    </div>
+
+    <!-- SECCIÓN CONFIG -->
     <div id="sec-c" class="hidden" style="text-align:center">
         <div class="form-section">
-            <h2 style="color:var(--danger)">SEGURIDAD DEL SISTEMA</h2>
-            <p>Cierra la sesión del bot para vincular un nuevo número o solucionar bloqueos.</p>
-            <button class="btn-main" style="background:var(--danger); color:white" onclick="resetBotSession()">🔥 CERRAR SESIÓN DEL BOT (LOGOUT)</button>
+            <h2 id="bot-status-title" style="color:var(--neon-cyan)">ESTADO DEL BOT: CARGANDO...</h2>
+            <div id="bot-status-indicator" style="font-size: 3rem; margin: 20px 0;">⏳</div>
+
+            <button id="btn-toggle-bot" class="btn-main" style="background: var(--neon-purple); margin-bottom: 20px;" onclick="toggleBot()">CARGANDO...</button>
+
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 30px 0;">
+
+            <h2 style="color:var(--danger)">ZONA DE SEGURIDAD</h2>
+            <p>Cierre la sesión si el bot se traba o quiere cambiar el WhatsApp.</p>
+            <button class="btn-danger" style="background:var(--danger); color:white; border:none; padding:15px; border-radius:12px; cursor:pointer; font-weight:bold; width:100%" onclick="resetBotSession()">🔥 CERRAR SESIÓN GLOBAL (LOGOUT)</button>
         </div>
     </div>
 </div>
@@ -168,9 +193,82 @@
     const db = firebase.database();
 
     let productsCache = {}; let usersCache = {};
+    let isBotOnline = true;
+    let firstLoad = true;
+
+    function playNotification() {
+        const sound = document.getElementById("notif-sound");
+        if (sound) {
+            sound.play().catch(e => console.log("Audio bloqueado por navegador:", e));
+        }
+    }
+
+    // Monitor de alertas de stock con sonido
+    db.ref("bot_logs").orderByChild("type").equalTo("ALERTA").limitToLast(1).on("child_added", (snap) => {
+        if (!firstLoad) {
+            playNotification();
+            showFloatingAlert("⚠️ ALERTA DE STOCK: " + snap.val().name);
+        }
+    });
+
+    // Monitor de pedidos con sonido
+    db.ref("orders").limitToLast(1).on("child_added", (snap) => {
+        if (!firstLoad) {
+            playNotification();
+            showFloatingAlert("🛒 ¡NUEVO PEDIDO RECIBIDO!");
+        }
+    });
+
+    // Desactivar alerta sonora en la primera carga para evitar spam
+    setTimeout(() => { firstLoad = false; }, 3000);
+
+    function showFloatingAlert(msg) {
+        const toast = document.createElement("div");
+        toast.style.position = "fixed";
+        toast.style.bottom = "20px";
+        toast.style.right = "20px";
+        toast.style.background = "var(--neon-purple)";
+        toast.style.color = "white";
+        toast.style.padding = "15px 25px";
+        toast.style.borderRadius = "12px";
+        toast.style.zIndex = "3000";
+        toast.style.boxShadow = "0 0 20px var(--neon-purple)";
+        toast.style.fontWeight = "bold";
+        toast.innerText = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 5000);
+    }
+
+    // Monitor de estado del bot
+    db.ref("bot_control/status").on("value", (snap) => {
+        isBotOnline = (snap.val() !== "offline");
+        const title = document.getElementById("bot-status-title");
+        const indicator = document.getElementById("bot-status-indicator");
+        const btn = document.getElementById("btn-toggle-bot");
+
+        if (isBotOnline) {
+            title.innerText = "SISTEMA IA: ACTIVO 🐺";
+            title.style.color = "var(--neon-cyan)";
+            indicator.innerText = "✅";
+            btn.innerText = "APAGAR BOT AHORA";
+            btn.style.background = "var(--danger)";
+        } else {
+            title.innerText = "SISTEMA IA: EN PAUSA 💤";
+            title.style.color = "var(--text-med)";
+            indicator.innerText = "❌";
+            btn.innerText = "ENCENDER BOT AHORA";
+            btn.style.background = "var(--success)";
+        }
+    });
+
+    async function toggleBot() {
+        const newStatus = isBotOnline ? "offline" : "online";
+        await db.ref("bot_control/status").set(newStatus);
+        alert("Comando de " + (isBotOnline ? "Apagado" : "Encendido") + " enviado con éxito.");
+    }
 
     function showTab(t) {
-        ['p','o','m','u','c'].forEach(s => {
+        ['p','u','o','m','l','c'].forEach(s => {
             const sec = document.getElementById('sec-'+s); const tab = document.getElementById('tab-'+s);
             if(sec) sec.classList.add('hidden'); if(tab) tab.classList.remove('active');
         });
@@ -183,11 +281,15 @@
         productsCache = {};
         snap.forEach((child) => {
             const p = child.val(); productsCache[child.key] = p;
+            const stockValue = parseInt(p.stock) || 0;
+            const stockDisplay = stockValue > 0
+                ? `${stockValue} u.`
+                : `<span class="badge" style="background:var(--danger); color:white">AGOTADO</span>`;
+
             list.innerHTML += `<tr>
                 <td><strong>${p.name}</strong></td>
                 <td><span class="badge badge-cyan">$${p.price}</span></td>
-                <td>${p.category || '-'}</td>
-                <td>${p.stock || 0} u.</td>
+                <td>${stockDisplay}</td>
                 <td class="action-group">
                     <button class="action-btn btn-edit" onclick="prepareProductEdit('${child.key}')">EDITAR</button>
                     <button class="action-btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
@@ -209,7 +311,7 @@
         if(!data.name) return alert("Nombre obligatorio");
         if(id) await db.ref("products/" + id).set(data);
         else await db.ref("products").push(data);
-        alert("Guardado"); resetProductForm();
+        alert("¡Inventario actualizado!"); resetProductForm();
     }
 
     function prepareProductEdit(id) {
@@ -229,7 +331,7 @@
     function resetProductForm() {
         document.getElementById("p-id").value = "";
         document.querySelectorAll('#sec-p input, #sec-p textarea').forEach(i => i.value = "");
-        document.getElementById("p-form-title").innerText = "GESTIÓN DE INVENTARIO";
+        document.getElementById("p-form-title").innerText = "Gestión de Inventario";
         document.getElementById("p-btn-cancel").classList.add("hidden");
     }
 
@@ -242,28 +344,40 @@
             const contactNum = u.number || u.phone || "";
             const isLid = key.length > 13;
             const lastTime = new Date(u.last_seen || Date.now()).toLocaleString();
-            const waLink = contactNum ? `https://wa.me/${contactNum.toString().replace(/\D/g,'')}` : `https://wa.me/${key.split(':')[0]}`;
+            const waLink = `https://wa.me/${contactNum.toString().replace(/\D/g,'') || key.split(':')[0]}`;
+            const isBlocked = u.status === "blocked";
 
-            list.innerHTML += `<tr>
-                <td><strong>${u.name || u.whatsapp_name || 'Sin Nombre'}</strong></td>
-                <td><span style="color:var(--neon-cyan)">${contactNum || 'No registrado'}</span></td>
-                <td><small style="color:grey">${isLid ? 'ID EMPRESARIAL' : key}</small></td>
+            list.innerHTML += `<tr style="${isBlocked ? 'opacity: 0.5; background: rgba(255,0,0,0.05);' : ''}">
+                <td><strong>${u.name || u.whatsapp_name || 'Nuevo'} ${isBlocked ? '🚫' : ''}</strong></td>
+                <td><span style="color:var(--neon-cyan)">${contactNum || 'N/A'}</span></td>
+                <td><small style="color:grey">${isLid ? 'ID LID' : key}</small></td>
                 <td><small>${lastTime}</small></td>
                 <td class="action-group">
                     <button class="action-btn btn-edit" onclick="prepareUserEdit('${key}')">EDITAR</button>
-                    <a href="${waLink}" class="action-btn btn-wa" target="_blank">CHAT</a>
+                    <button class="action-btn" style="background:${isBlocked ? 'var(--success)' : '#f39c12'}; color:white" onclick="toggleBlockUser('${key}', ${isBlocked})">
+                        ${isBlocked ? 'DESBLOQUEAR' : 'BLOQUEAR'}
+                    </button>
                     <button class="action-btn btn-delete" onclick="deleteItem('bot_users/${key}')">X</button>
+                    <a href="${waLink}" class="action-btn btn-wa" target="_blank">WA</a>
                 </td>
             </tr>`;
         });
     });
 
+    async function toggleBlockUser(key, currentlyBlocked) {
+        const newStatus = currentlyBlocked ? "active" : "blocked";
+        if (confirm(`¿${currentlyBlocked ? 'Desbloquear' : 'Bloquear'} a este usuario?`)) {
+            await db.ref("bot_users/" + key).update({ status: newStatus });
+            showFloatingAlert(currentlyBlocked ? "Usuario Desbloqueado" : "Usuario BLOQUEADO");
+        }
+    }
+
     function prepareUserEdit(key) {
         const u = usersCache[key];
         document.getElementById("u-key").value = key;
-        document.getElementById("u-old-phone").value = u.number || u.phone || "";
+        document.getElementById("u-old-phone").value = u.number || u.phone || key;
         document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
-        document.getElementById("u-phone").value = u.number || u.phone || "";
+        document.getElementById("u-phone").value = u.number || u.phone || key;
         document.getElementById("u-form-title").innerText = "EDITANDO CLIENTE: " + (u.name || u.whatsapp_name);
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -284,24 +398,41 @@
         } else {
             await db.ref("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
         }
-        alert("Ficha Sincronizada"); resetUserForm();
+        alert("¡Ficha Sincronizada!"); resetUserForm();
     }
 
-    function resetUserForm() {
-        document.getElementById("u-key").value = "";
-        document.getElementById("u-name").value = "";
-        document.getElementById("u-phone").value = "";
-        document.getElementById("u-form-title").innerText = "FICHA DE CLIENTE";
-    }
+    function resetUserForm() { document.getElementById("u-key").value = ""; document.getElementById("u-name").value = ""; document.getElementById("u-phone").value = ""; document.getElementById("u-form-title").innerText = "Ficha de Cliente"; }
 
     // --- PEDIDOS Y MENSAJES ---
     db.ref("orders").on("value", snap => {
         const list = document.getElementById("o-list-body"); list.innerHTML = "";
         snap.forEach(c => {
-            const o = c.val(); const date = o.timestamp ? new Date(o.timestamp).toLocaleString() : '-';
-            list.innerHTML += `<tr><td>${o.username}</td><td>${o.phone}</td><td>${o.productName}</td><td><small>${date}</small></td><td><button class='action-btn btn-delete' onclick='deleteItem("orders/${c.key}")'>X</button></td></tr>`;
+            const o = c.val();
+            const status = o.status || "PENDIENTE";
+            const color = status === "ENTREGADO" ? "var(--success)" : (status === "ENVIADO" ? "var(--neon-purple)" : "var(--neon-cyan)");
+
+            list.innerHTML += `<tr>
+                <td><strong>${o.username}</strong></td>
+                <td><a href="https://wa.me/${o.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--neon-cyan); text-decoration:none;">${o.phone}</a></td>
+                <td>${o.name || 'Producto'}</td>
+                <td>
+                    <select onchange="updateOrderStatus('${c.key}', this.value)" style="background:#000; color:${color}; border:1px solid ${color}; padding:5px; border-radius:8px; font-weight:bold; font-size:0.7rem;">
+                        <option value="PENDIENTE" ${status === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
+                        <option value="EN PROCESO" ${status === 'EN PROCESO' ? 'selected' : ''}>EN PROCESO</option>
+                        <option value="ENVIADO" ${status === 'ENVIADO' ? 'selected' : ''}>ENVIADO</option>
+                        <option value="ENTREGADO" ${status === 'ENTREGADO' ? 'selected' : ''}>ENTREGADO</option>
+                        <option value="CANCELADO" ${status === 'CANCELADO' ? 'selected' : ''}>CANCELADO</option>
+                    </select>
+                </td>
+                <td><button class='action-btn btn-delete' onclick='deleteItem("orders/${c.key}")'>X</button></td>
+            </tr>`;
         });
     });
+
+    async function updateOrderStatus(id, newStatus) {
+        await db.ref("orders/" + id).update({ status: newStatus });
+        showFloatingAlert("Estado actualizado a: " + newStatus);
+    }
 
     db.ref("talk_requests").on("value", snap => {
         const list = document.getElementById("m-list-body"); list.innerHTML = "";
@@ -312,8 +443,23 @@
         });
     });
 
+    // --- LOGS MAESTROS (IA + SISTEMA) ---
+    db.ref("bot_logs").limitToLast(50).on("value", (snap) => {
+        const term = document.getElementById("terminal-logs"); term.innerHTML = "";
+        snap.forEach((child) => {
+            const l = child.val();
+            const time = new Date(l.timestamp).toLocaleTimeString();
+            const color = l.type === 'ALERTA' ? 'red' : (l.type === 'IA' ? 'var(--neon-purple)' : 'var(--neon-cyan)');
+            const typeLabel = `<span style="color:${color}; border:1px solid ${color}; padding:1px 4px; border-radius:4px; font-size:0.6rem; margin-right:5px;">${l.type}</span>`;
+
+            term.innerHTML += `<div class="log-entry"><span class="log-time">[${time}]</span>${typeLabel}<span class="log-name" style="color:${color}">${l.name}:</span> <span class="log-msg">${l.message}</span></div>`;
+        });
+        term.scrollTop = term.scrollHeight;
+    });
+
+    async function clearHistory() { if(confirm("¿VACIAR LOGS DEL SISTEMA?")) await db.ref("bot_logs").remove(); }
     async function deleteItem(path) { if(confirm("¿Eliminar permanentemente?")) await db.ref(path).remove(); }
-    async function resetBotSession() { if(confirm("¿CERRAR SESIÓN GLOBAL?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
+    async function resetBotSession() { if(confirm("¿CONFIRMAR LOGOUT GLOBAL?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
 </script>
 </body>
 </html>

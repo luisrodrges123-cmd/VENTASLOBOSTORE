@@ -57,6 +57,25 @@
             font-weight: 900;
         }
 
+        .btn-track {
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: auto;
+            font-size: 0.8rem;
+            transition: 0.3s;
+        }
+
+        .btn-track:hover {
+            background: var(--neon-cyan);
+            color: black;
+            box-shadow: 0 0 15px var(--neon-cyan);
+        }
+
         .hero {
             padding: 80px 20px;
             text-align: center;
@@ -263,7 +282,8 @@
     <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
         <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo">
     </a>
-    <h1>VENTAS LOBO STORE</h1>
+    <h1>LOBO STORE</h1>
+    <button class="btn-track" onclick="showTrackingModal()">MI PEDIDO 📦</button>
 </div>
 
 <div class="hero">
@@ -286,8 +306,118 @@
     </div>
 </div>
 
+<div id="ticketModal" class="modal">
+    <div class="modal-content" id="ticket-capture" style="max-width: 400px; background: white; color: black; padding: 0; overflow: hidden; border-radius: 0;">
+        <div style="background: #000; padding: 20px; text-align: center;">
+            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" style="width: 80px; filter: drop-shadow(0 0 5px #00F2FF);">
+            <h2 style="color: #00F2FF; margin: 10px 0 0 0; font-size: 1.2rem; letter-spacing: 2px;">LOBO STORE</h2>
+            <p style="color: #E0E0E0; font-size: 0.6rem; margin: 5px 0 0 0;">TECNOLOGÍA PREMIUM & EXCLUSIVA</p>
+        </div>
+
+        <div style="padding: 30px; font-family: 'Courier New', monospace; position: relative;">
+            <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 1rem;">COMPROBANTE DE PEDIDO</h3>
+                <p id="t-id" style="margin: 5px 0; font-weight: bold;"></p>
+            </div>
+
+            <div style="font-size: 0.9rem; line-height: 1.6;">
+                <div style="display:flex; justify-content: space-between;"><span>FECHA:</span> <span id="t-date"></span></div>
+                <div style="display:flex; justify-content: space-between;"><span>CLIENTE:</span> <span id="t-client" style="font-weight: bold;"></span></div>
+                <div style="display:flex; justify-content: space-between;"><span>TELÉFONO:</span> <span id="t-phone"></span></div>
+
+                <div style="margin: 20px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <div style="display:flex; justify-content: space-between; font-weight: bold;">
+                        <span>PRODUCTO</span>
+                        <span>TOTAL</span>
+                    </div>
+                    <div style="display:flex; justify-content: space-between; margin-top: 5px;">
+                        <span id="t-product" style="max-width: 70%;"></span>
+                        <span id="t-price"></span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="t-status" style="border: 2px solid black; padding: 5px 15px; display: inline-block; font-weight: 900; transform: rotate(-5deg);"></span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; font-size: 0.7rem; color: #666;">
+                <p>Escanea este comprobante en tienda o envíalo por WhatsApp para seguimiento.</p>
+                <p>¡Gracias por ser parte de la manada! 🐺</p>
+            </div>
+        </div>
+
+        <div style="padding: 15px; background: #f9f9f9; border-top: 1px solid #ddd; display: flex; gap: 10px;">
+            <button class="btn-buy" style="margin: 0; padding: 10px; font-size: 0.8rem; background: #000;" onclick="downloadPDF()">DESCARGAR TICKET (PDF)</button>
+            <button onclick="document.getElementById('ticketModal').style.display='none'" style="flex:1; background:none; border: 1px solid #ccc; border-radius: 12px; cursor:pointer; font-weight:bold">CERRAR</button>
+        </div>
+    </div>
+</div>
+
+<div id="trackingModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h3 class="modal-header">RASTREAR MI PEDIDO</h3>
+        <p style="color:var(--text-med); font-size: 0.9rem;">Ingresa tu número de WhatsApp para ver el estado de tus compras.</p>
+        <input type="tel" id="trackPhone" placeholder="Ej: 5216681234567">
+        <button class="btn-buy" onclick="trackOrders()">BUSCAR PEDIDOS</button>
+
+        <div id="trackingResults" style="margin-top: 25px; text-align: left; max-height: 300px; overflow-y: auto;"></div>
+
+        <button onclick="document.getElementById('trackingModal').style.display='none'" style="background:none; border:none; color:var(--text-med); width:100%; margin-top:20px; cursor:pointer; font-weight:bold">CERRAR</button>
+    </div>
+</div>
+
+<div id="ticketModal" class="modal">
+    <div class="modal-content" id="ticket-capture" style="max-width: 400px; background: white; color: black; padding: 0; overflow: hidden; border-radius: 0;">
+        <div style="background: #000; padding: 20px; text-align: center;">
+            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" style="width: 80px; filter: drop-shadow(0 0 5px #00F2FF);">
+            <h2 style="color: #00F2FF; margin: 10px 0 0 0; font-size: 1.2rem; letter-spacing: 2px;">LOBO STORE</h2>
+            <p style="color: #E0E0E0; font-size: 0.6rem; margin: 5px 0 0 0;">TECNOLOGÍA PREMIUM & EXCLUSIVA</p>
+        </div>
+
+        <div style="padding: 30px; font-family: 'Courier New', monospace; position: relative;">
+            <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 1rem;">COMPROBANTE DE PEDIDO</h3>
+                <p id="t-id" style="margin: 5px 0; font-weight: bold;"></p>
+            </div>
+
+            <div style="font-size: 0.9rem; line-height: 1.6;">
+                <div style="display:flex; justify-content: space-between;"><span>FECHA:</span> <span id="t-date"></span></div>
+                <div style="display:flex; justify-content: space-between;"><span>CLIENTE:</span> <span id="t-client" style="font-weight: bold;"></span></div>
+                <div style="display:flex; justify-content: space-between;"><span>TELÉFONO:</span> <span id="t-phone"></span></div>
+
+                <div style="margin: 20px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px 0;">
+                    <div style="display:flex; justify-content: space-between; font-weight: bold;">
+                        <span>PRODUCTO</span>
+                        <span>TOTAL</span>
+                    </div>
+                    <div style="display:flex; justify-content: space-between; margin-top: 5px;">
+                        <span id="t-product" style="max-width: 70%;"></span>
+                        <span id="t-price"></span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 10px;">
+                    <span id="t-status" style="border: 2px solid black; padding: 5px 15px; display: inline-block; font-weight: 900; transform: rotate(-5deg);"></span>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px; font-size: 0.7rem; color: #666;">
+                <p>Escanea este comprobante en tienda o envíalo por WhatsApp para seguimiento.</p>
+                <p>¡Gracias por ser parte de la manada! 🐺</p>
+            </div>
+        </div>
+
+        <div style="padding: 15px; background: #f9f9f9; border-top: 1px solid #ddd; display: flex; gap: 10px;">
+            <button class="btn-buy" style="margin: 0; padding: 10px; font-size: 0.8rem; background: #000;" onclick="downloadPDF()">DESCARGAR TICKET (PDF)</button>
+            <button onclick="document.getElementById('ticketModal').style.display='none'" style="flex:1; background:none; border: 1px solid #ccc; border-radius: 12px; cursor:pointer; font-weight:bold">CERRAR</button>
+        </div>
+    </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
     const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
@@ -306,6 +436,18 @@
 
         snap.forEach((child) => {
             const p = child.val();
+
+            // FILTRO ESTRICTO: Si no hay stock o es 0, no mostrar
+            let currentStock = 0;
+            if (p.stock !== undefined && p.stock !== null) {
+                currentStock = parseInt(p.stock);
+            }
+
+            if (currentStock <= 0 || isNaN(currentStock)) {
+                console.log("Ocultando producto sin stock:", p.name);
+                return;
+            }
+
             const productCard = document.createElement("div");
             productCard.className = "product-card";
             const imgUrl = p.imageUrl || "https://via.placeholder.com/400x300?text=Premium+Item";
@@ -317,7 +459,7 @@
                     <h3 class="product-name">${p.name}</h3>
                     <div class="product-price">$${p.price}</div>
                     <p class="product-desc">${p.description || 'Sin descripción detallada disponible.'}</p>
-                    <div class="product-stock">Stock Disponible: ${p.stock || 'Consultar'}</div>
+                    <div class="product-stock">Stock Disponible: ${currentStock}</div>
                     <button class="btn-buy" onclick="openModal('${p.name}', ${p.price}, '${imgUrl}')">LO QUIERO</button>
                 </div>
             `;
@@ -330,16 +472,114 @@
         document.getElementById("orderModal").style.display = "block";
     }
 
+    function showTrackingModal() {
+        document.getElementById("trackingModal").style.display = "block";
+        document.getElementById("trackingResults").innerHTML = "";
+    }
+
+    async function trackOrders() {
+        const inputPhone = document.getElementById("trackPhone").value.trim().replace(/\D/g,'');
+        if (!inputPhone) return alert("Ingresa tu número de WhatsApp");
+
+        const resDiv = document.getElementById("trackingResults");
+        resDiv.innerHTML = "<p style='text-align:center;'>Buscando en el sistema Lobo Store...</p>";
+
+        db.ref("orders").once("value", (snap) => {
+            resDiv.innerHTML = "";
+            let found = false;
+
+            snap.forEach(child => {
+                const o = child.val();
+                if (!o.phone) return;
+
+                // Normalizar ambos números: tomar solo los últimos 10 dígitos (estándar México)
+                const oPhoneNormalized = o.phone.toString().replace(/\D/g,'').slice(-10);
+                const inputPhoneNormalized = inputPhone.slice(-10);
+
+                if (oPhoneNormalized === inputPhoneNormalized && inputPhoneNormalized.length === 10) {
+                    found = true;
+                    const status = o.status || 'PENDIENTE';
+                    const statusColor = status === "ENTREGADO" ? "#25D366" : (status === "ENVIADO" ? "#BC13FE" : "#00F2FF");
+
+                    const orderItem = document.createElement("div");
+                    orderItem.style.background = "rgba(255,255,255,0.05)";
+                    orderItem.style.padding = "15px";
+                    orderItem.style.borderRadius = "12px";
+                    orderItem.style.marginBottom = "10px";
+                    orderItem.style.borderLeft = `4px solid ${statusColor}`;
+
+                    orderItem.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                            <strong style="color:white; font-size:1.1rem;">${o.name || 'Producto'}</strong>
+                            <span style="color:${statusColor}; font-size:0.7rem; font-weight:900; border:1px solid ${statusColor}; padding:3px 8px; border-radius:6px; text-transform:uppercase;">${status}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; color:var(--text-med); font-size:0.8rem;">
+                            <span>Precio: $${o.price || '-'}</span>
+                            <span>ID: #${child.key.slice(-5).toUpperCase()}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;">
+                            <p style="margin:0; font-size:0.7rem; color:grey;">📅 Compra: ${new Date(o.timestamp || Date.now()).toLocaleString()}</p>
+                            <button class="btn-track" style="margin:0; padding:5px 10px; font-size:0.6rem; border-color:var(--neon-purple); color:var(--neon-purple);" onclick='showDigitalTicket("${child.key}", ${JSON.stringify(o).replace(/"/g, '&quot;')})'>GENERAR TICKET</button>
+                        </div>
+                    `;
+                    resDiv.appendChild(orderItem);
+                }
+            });
+
+            if (!found) {
+                resDiv.innerHTML = `
+                    <div style="text-align:center; padding:20px;">
+                        <p style="color:var(--danger); font-weight:bold; margin:0;">❌ SIN RESULTADOS</p>
+                        <p style="color:grey; font-size:0.8rem;">No hay pedidos registrados para: ${inputPhone}</p>
+                    </div>
+                `;
+            }
+        });
+    }
+
+    function showDigitalTicket(id, data) {
+        document.getElementById("t-id").innerText = "ORDEN: #" + id.slice(-6).toUpperCase();
+        document.getElementById("t-date").innerText = new Date(data.timestamp || Date.now()).toLocaleDateString();
+        document.getElementById("t-client").innerText = (data.username || "CLIENTE").toUpperCase();
+        document.getElementById("t-phone").innerText = data.phone || "-";
+        document.getElementById("t-product").innerText = data.name || "PRODUCTO PREMIUM";
+        document.getElementById("t-price").innerText = "$" + (data.price || "0.00");
+        document.getElementById("t-status").innerText = (data.status || "PENDIENTE").toUpperCase();
+
+        document.getElementById("ticketModal").style.display = "block";
+    }
+
+    function downloadPDF() {
+        const element = document.getElementById('ticket-capture');
+        const opt = {
+            margin:       0.5,
+            filename:     'Ticket_LoboStore_' + document.getElementById('t-id').innerText.replace('#', '') + '.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+        };
+
+        // Escondemos los botones de la captura si estuvieran dentro, pero están fuera en este diseño.
+        html2pdf().set(opt).from(element).save();
+    }
+
     async function finalizeOrder() {
         const n = document.getElementById("custName").value;
         const p = document.getElementById("custPhone").value;
         if (!n || !p) return alert("Por favor, ingresa tus datos para procesar el pedido.");
 
-        await db.ref("orders").push({ ...selectedProd, username: n, phone: p, status: "PENDIENTE", timestamp: Date.now() });
+        const orderRef = await db.ref("orders").push({ ...selectedProd, username: n, phone: p, status: "PENDIENTE", timestamp: Date.now() });
 
         const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, acabo de ver este producto en la web y me interesa comprarlo.`;
-        window.open(`https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}`, '_blank');
-        document.getElementById("orderModal").style.display = "none";
+
+        // Cambiar contenido del modal para mostrar estado
+        document.querySelector(".modal-content").innerHTML = `
+            <h3 class="modal-header">¡PEDIDO REGISTRADO!</h3>
+            <div style="font-size:3rem; margin:20px 0;">📦</div>
+            <p style="color:var(--neon-cyan); font-weight:bold;">ESTADO: PENDIENTE</p>
+            <p>Se ha enviado tu solicitud. Por favor, completa el envío por WhatsApp para que el asesor te atienda.</p>
+            <button class="btn-buy" onclick="window.open('https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}', '_blank'); location.reload();">ENVIAR A WHATSAPP AHORA</button>
+        `;
     }
 </script>
 </body>

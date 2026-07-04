@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MODO SISTEMA PREMIUM - Ventas Lobo Store</title>
+    <title>SISTEMA PREMIUM - Lobo Store Control</title>
     <style>
         :root {
             --neon-cyan: #00F2FF;
@@ -12,285 +12,308 @@
             --dark-card: #121212;
             --text-high: #E0E0E0;
             --text-med: #9E9E9E;
+            --glass: rgba(255, 255, 255, 0.03);
+            --success: #25D366;
+            --danger: #FF3B30;
         }
 
         body {
-            font-family: 'Segoe UI', sans-serif;
+            font-family: 'Segoe UI', Roboto, sans-serif;
             background-color: var(--bg-black);
             color: var(--text-high);
-            margin: 0;
-            padding: 20px;
+            margin: 0; padding: 20px;
+            background: radial-gradient(circle at top right, #1a1a1a, #050505);
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 1000px;
-            margin: auto;
-            background: var(--dark-card);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 0 20px rgba(0,242,255,0.1);
-            border: 1px solid rgba(255,255,255,0.05);
+            max-width: 1200px; margin: auto;
+            background: var(--dark-card); padding: 40px;
+            border-radius: 24px; border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
         }
 
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
+        .header { text-align: center; margin-bottom: 40px; }
+        .logo { width: 140px; height: 140px; border-radius: 25px; border: 2px solid var(--neon-cyan); box-shadow: 0 0 30px var(--neon-cyan); margin-bottom: 20px; transition: 0.5s; }
+        .logo:hover { transform: scale(1.05) rotate(5deg); }
 
-        .logo {
-            width: 60px;
-            height: 60px;
-            margin-right: 15px;
-            border-radius: 50%;
-            border: 2px solid var(--neon-cyan);
-            box-shadow: 0 0 10px var(--neon-cyan);
-        }
+        .tabs { display: flex; gap: 10px; background: var(--glass); padding: 5px; border-radius: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; color: var(--text-med); font-weight: 900; border-radius: 10px; transition: 0.3s; text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; min-width: 120px; }
+        .tab.active { background: var(--neon-purple); color: white; box-shadow: 0 0 20px var(--neon-purple); }
 
-        h1 {
-            margin: 0;
-            color: var(--neon-cyan);
-            font-weight: 900;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
+        .form-section { background: var(--glass); padding: 30px; border-radius: 20px; margin-bottom: 40px; border: 1px solid rgba(255,255,255,0.05); }
+        .form-section h3 { margin-top: 0; margin-bottom: 20px; color: var(--neon-cyan); font-size: 1.1rem; text-transform: uppercase; }
 
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--dark-card);
-            margin-bottom: 20px;
-        }
+        .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 15px; background: #0a0a0a; border: 1px solid #333; color: white; border-radius: 12px; box-sizing: border-box; font-size: 0.9rem; transition: 0.3s; }
+        input:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 10px rgba(0,242,255,0.2); }
 
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            color: var(--text-med);
-            font-weight: bold;
-        }
+        .btn-main { width: 100%; padding: 16px; background: var(--neon-cyan); color: black; border: none; border-radius: 12px; font-weight: 900; text-transform: uppercase; cursor: pointer; transition: 0.3s; letter-spacing: 1px; }
+        .btn-main:hover { background: white; box-shadow: 0 0 20px var(--neon-cyan); transform: translateY(-2px); }
 
-        .tab.active {
-            color: var(--neon-purple);
-            border-bottom: 3px solid var(--neon-purple);
-        }
+        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
+        th { text-align: left; color: var(--neon-cyan); padding: 15px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.7; }
+        td { padding: 20px; background: rgba(255,255,255,0.02); border-top: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); }
+        tr td:first-child { border-radius: 15px 0 0 15px; border-left: 1px solid rgba(255,255,255,0.05); }
+        tr td:last-child { border-radius: 0 15px 15px 0; border-right: 1px solid rgba(255,255,255,0.05); }
 
-        .form-section {
-            background: rgba(255,255,255,0.02);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border-left: 4px solid var(--neon-cyan);
-        }
+        .action-group { display: flex; gap: 10px; }
+        .action-btn { padding: 10px 15px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 0.75rem; text-transform: uppercase; transition: 0.2s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-edit { background: var(--neon-purple); color: white; }
+        .btn-delete { background: var(--danger); color: white; }
+        .btn-wa { background: var(--success); color: white; }
 
-        .form-group { margin-bottom: 15px; }
-
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
-            box-sizing: border-box;
-        }
-
-        input:focus { border-color: var(--neon-cyan); outline: none; }
-
-        .btn {
-            padding: 12px 25px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-            transition: 0.3s;
-        }
-
-        .btn-add { background-color: var(--neon-cyan); color: black; width: 100%; }
-        .btn-add:hover { background-color: white; box-shadow: 0 0 15px var(--neon-cyan); }
-
-        .btn-edit { background-color: var(--neon-purple); color: white; padding: 5px 10px; margin-right: 5px; }
-        .btn-delete { background-color: #FF3B30; color: white; padding: 5px 10px; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #222; }
-        th { color: var(--neon-cyan); text-transform: uppercase; font-size: 12px; }
-
-        .order-row:hover { background: rgba(188,19,254,0.05); }
-        .status-chip {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            border: 1px solid var(--neon-purple);
-            color: var(--neon-purple);
-        }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 900; text-transform: uppercase; }
+        .badge-cyan { background: rgba(0, 242, 255, 0.1); color: var(--neon-cyan); }
+        .badge-purple { background: rgba(188, 19, 254, 0.1); color: var(--neon-purple); }
 
         .hidden { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container" id="main-content">
+<div class="container">
     <div class="header">
-        <img src="ic_store_logo.png" alt="Logo" class="logo" onerror="this.src='https://via.placeholder.com/60?text=Lobo'">
-        <h1>VENTAS LOBO STORE - ADMIN PREMIUM</h1>
+        <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
+            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo" class="logo">
+        </a>
+        <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - MODO PREMIUM</h1>
     </div>
 
     <div class="tabs">
-        <div class="tab active" id="tab-products" onclick="showTab('products')">INVENTARIO</div>
-        <div class="tab" id="tab-orders" onclick="showTab('orders')">PEDIDOS</div>
+        <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
+        <div class="tab" id="tab-o" onclick="showTab('o')">PEDIDOS</div>
+        <div class="tab" id="tab-m" onclick="showTab('m')">MENSAJES 💬</div>
+        <div class="tab" id="tab-u" onclick="showTab('u')">USUARIOS 👥</div>
+        <div class="tab" id="tab-c" onclick="showTab('c')">BOT CONFIG ⚙️</div>
+        <div class="tab" onclick="window.open('https://producto-enventa-63d4e.firebaseapp.com/', '_blank')">TIENDA 🌐</div>
     </div>
 
-    <div id="section-products">
+    <!-- SECCIÓN PRODUCTOS -->
+    <div id="sec-p">
         <div class="form-section">
-            <h3 id="form-title">NUEVO PRODUCTO</h3>
-            <input type="hidden" id="edit-id">
-            <div class="form-group"><input type="text" id="name" placeholder="Nombre del Producto"></div>
-            <div class="form-group"><input type="number" id="price" placeholder="Precio (Créditos)"></div>
-            <div class="form-group"><textarea id="description" placeholder="Descripción Detallada"></textarea></div>
-            <div class="form-group"><input type="text" id="imageUrl" placeholder="URL de Imagen"></div>
-            <button class="btn btn-add" id="btn-save" onclick="saveProduct()">GUARDAR ITEM</button>
-            <button class="btn btn-delete hidden" id="btn-cancel" onclick="resetForm()" style="margin-top:10px; width:100%">CANCELAR EDICIÓN</button>
+            <h3 id="p-form-title">GESTIÓN DE ARTÍCULOS</h3>
+            <input type="hidden" id="p-id">
+            <div class="input-grid">
+                <input type="text" id="p-name" placeholder="Nombre Comercial">
+                <input type="number" id="p-price" placeholder="Precio ($)">
+                <input type="text" id="p-category" placeholder="Categoría">
+                <input type="number" id="p-stock" placeholder="Stock Inicial">
+                <input type="text" id="p-img" placeholder="Enlace de la Imagen">
+            </div>
+            <textarea id="p-desc" placeholder="Descripción y características técnicas..." style="width:100%; height:80px; margin-bottom:20px;"></textarea>
+            <button class="btn-main" onclick="saveProduct()">GUARDAR ARTÍCULO</button>
+            <button class="action-btn btn-delete hidden" id="p-btn-cancel" style="width:100%; margin-top:10px;" onclick="resetProductForm()">CANCELAR EDICIÓN</button>
         </div>
-
         <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Precio</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody id="product-list"></tbody>
+            <thead><tr><th>Artículo</th><th>Precio</th><th>Categoría</th><th>Stock</th><th>Acciones</th></tr></thead>
+            <tbody id="p-list-body"></tbody>
         </table>
     </div>
 
-    <div id="section-orders" class="hidden">
+    <!-- SECCIÓN USUARIOS -->
+    <div id="sec-u" class="hidden">
+        <div class="form-section">
+            <h3 id="u-form-title">FICHA DE CLIENTE</h3>
+            <input type="hidden" id="u-key">
+            <input type="hidden" id="u-old-phone">
+            <div class="input-grid">
+                <input type="text" id="u-name" placeholder="Nombre Asignado">
+                <input type="number" id="u-phone" placeholder="Número Telefónico Real">
+            </div>
+            <button class="btn-main" onclick="saveUser()">ACTUALIZAR DATOS</button>
+            <button class="action-btn btn-delete" style="width:100%; margin-top:10px;" onclick="resetUserForm()">CANCELAR / LIMPIAR</button>
+        </div>
         <table>
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Teléfono</th>
-                    <th>Producto</th>
-                    <th>Estado</th>
-                    <th>Acción</th>
-                </tr>
-            </thead>
-            <tbody id="order-list"></tbody>
+            <thead><tr><th>Identidad</th><th>Número Real</th><th>WhatsApp ID</th><th>Actividad</th><th>Acciones</th></tr></thead>
+            <tbody id="u-list-body"></tbody>
         </table>
+    </div>
+
+    <!-- SECCIÓN PEDIDOS -->
+    <div id="sec-o" class="hidden">
+        <h3 style="color:var(--neon-cyan)">ORDENES RECIBIDAS</h3>
+        <table>
+            <thead><tr><th>Cliente</th><th>WhatsApp</th><th>Producto</th><th>Fecha</th><th>Acción</th></tr></thead>
+            <tbody id="o-list-body"></tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN MENSAJES -->
+    <div id="sec-m" class="hidden">
+        <h3 style="color:var(--neon-cyan)">SOLICITUDES DE ASESORÍA</h3>
+        <table>
+            <thead><tr><th>Fecha / Hora</th><th>Usuario</th><th>Número</th><th>Chat</th><th>Acción</th></tr></thead>
+            <tbody id="m-list-body"></tbody>
+        </table>
+    </div>
+
+    <!-- SECCIÓN CONFIG BOT -->
+    <div id="sec-c" class="hidden" style="text-align:center">
+        <div class="form-section">
+            <h2 style="color:var(--danger)">SEGURIDAD DEL SISTEMA</h2>
+            <p>Cierra la sesión del bot para vincular un nuevo número o solucionar bloqueos.</p>
+            <button class="btn-main" style="background:var(--danger); color:white" onclick="resetBotSession()">🔥 CERRAR SESIÓN DEL BOT (LOGOUT)</button>
+        </div>
     </div>
 </div>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
 
 <script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyB-7VpETFI6SxNNVEDhrXRnkU1nQjFBV9g",
-        databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com",
-        projectId: "producto-enventa",
-        storageBucket: "producto-enventa.firebasestorage.app",
-    };
-
+    const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    function showTab(type) {
-        document.getElementById('section-products').classList.toggle('hidden', type !== 'products');
-        document.getElementById('section-orders').classList.toggle('hidden', type !== 'orders');
-        document.getElementById('tab-products').classList.toggle('active', type === 'products');
-        document.getElementById('tab-orders').classList.toggle('active', type === 'orders');
-        if (type === 'orders') loadOrders();
+    let productsCache = {}; let usersCache = {};
+
+    function showTab(t) {
+        ['p','o','m','u','c'].forEach(s => {
+            const sec = document.getElementById('sec-'+s); const tab = document.getElementById('tab-'+s);
+            if(sec) sec.classList.add('hidden'); if(tab) tab.classList.remove('active');
+        });
+        document.getElementById('sec-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('active');
     }
 
-    function loadProducts() {
-        db.ref("products").on("value", (snapshot) => {
-            const list = document.getElementById("product-list");
-            list.innerHTML = "";
-            snapshot.forEach((child) => {
-                const p = child.val();
-                list.innerHTML += `<tr>
-                    <td>${p.name}</td>
-                    <td>$${p.price}</td>
-                    <td>
-                        <button class="btn btn-edit" onclick="editProduct('${child.key}', '${p.name}', ${p.price}, '${p.description || ''}', '${p.imageUrl || ''}')">Editar</button>
-                        <button class="btn btn-delete" onclick="deleteItem('products/${child.key}')">Eliminar</button>
-                    </td>
-                </tr>`;
-            });
+    // --- PRODUCTOS ---
+    db.ref("products").on("value", (snap) => {
+        const list = document.getElementById("p-list-body"); list.innerHTML = "";
+        productsCache = {};
+        snap.forEach((child) => {
+            const p = child.val(); productsCache[child.key] = p;
+            list.innerHTML += `<tr>
+                <td><strong>${p.name}</strong></td>
+                <td><span class="badge badge-cyan">$${p.price}</span></td>
+                <td>${p.category || '-'}</td>
+                <td>${p.stock || 0} u.</td>
+                <td class="action-group">
+                    <button class="action-btn btn-edit" onclick="prepareProductEdit('${child.key}')">EDITAR</button>
+                    <button class="action-btn btn-delete" onclick="deleteItem('products/${child.key}')">X</button>
+                </td>
+            </tr>`;
         });
-    }
-
-    function loadOrders() {
-        db.ref("orders").on("value", (snapshot) => {
-            const list = document.getElementById("order-list");
-            list.innerHTML = "";
-            snapshot.forEach((child) => {
-                const o = child.val();
-                list.innerHTML += `<tr class="order-row">
-                    <td>${o.username}</td>
-                    <td>${o.phone}</td>
-                    <td>${o.productName}</td>
-                    <td><span class="status-chip">${o.status}</span></td>
-                    <td><button class="btn btn-delete" onclick="deleteItem('orders/${child.key}')">X</button></td>
-                </tr>`;
-            });
-        });
-    }
+    });
 
     async function saveProduct() {
-        const id = document.getElementById("edit-id").value;
-        const name = document.getElementById("name").value;
-        const price = parseFloat(document.getElementById("price").value);
-        const description = document.getElementById("description").value;
-        const imageUrl = document.getElementById("imageUrl").value;
+        const id = document.getElementById("p-id").value;
+        const data = {
+            name: document.getElementById("p-name").value.trim(),
+            price: parseFloat(document.getElementById("p-price").value) || 0,
+            category: document.getElementById("p-category").value.trim(),
+            stock: parseInt(document.getElementById("p-stock").value) || 0,
+            description: document.getElementById("p-desc").value.trim(),
+            imageUrl: document.getElementById("p-img").value.trim()
+        };
+        if(!data.name) return alert("Nombre obligatorio");
+        if(id) await db.ref("products/" + id).set(data);
+        else await db.ref("products").push(data);
+        alert("Guardado"); resetProductForm();
+    }
 
-        if(!name || isNaN(price)) return alert("Faltan datos");
+    function prepareProductEdit(id) {
+        const p = productsCache[id];
+        document.getElementById("p-id").value = id;
+        document.getElementById("p-name").value = p.name;
+        document.getElementById("p-price").value = p.price;
+        document.getElementById("p-category").value = p.category || "";
+        document.getElementById("p-stock").value = p.stock || 0;
+        document.getElementById("p-desc").value = p.description || "";
+        document.getElementById("p-img").value = p.imageUrl || "";
+        document.getElementById("p-form-title").innerText = "EDITANDO: " + p.name;
+        document.getElementById("p-btn-cancel").classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-        const productData = { name, price, description, imageUrl };
+    function resetProductForm() {
+        document.getElementById("p-id").value = "";
+        document.querySelectorAll('#sec-p input, #sec-p textarea').forEach(i => i.value = "");
+        document.getElementById("p-form-title").innerText = "GESTIÓN DE INVENTARIO";
+        document.getElementById("p-btn-cancel").classList.add("hidden");
+    }
 
-        if (id) {
-            await db.ref("products/" + id).update(productData);
-            alert("Producto actualizado");
+    // --- USUARIOS ---
+    db.ref("bot_users").on("value", (snap) => {
+        const list = document.getElementById("u-list-body"); list.innerHTML = "";
+        usersCache = {};
+        snap.forEach((child) => {
+            const u = child.val(); const key = child.key; usersCache[key] = u;
+            const contactNum = u.number || u.phone || "";
+            const isLid = key.length > 13;
+            const lastTime = new Date(u.last_seen || Date.now()).toLocaleString();
+            const waLink = contactNum ? `https://wa.me/${contactNum.toString().replace(/\D/g,'')}` : `https://wa.me/${key.split(':')[0]}`;
+
+            list.innerHTML += `<tr>
+                <td><strong>${u.name || u.whatsapp_name || 'Sin Nombre'}</strong></td>
+                <td><span style="color:var(--neon-cyan)">${contactNum || 'No registrado'}</span></td>
+                <td><small style="color:grey">${isLid ? 'ID EMPRESARIAL' : key}</small></td>
+                <td><small>${lastTime}</small></td>
+                <td class="action-group">
+                    <button class="action-btn btn-edit" onclick="prepareUserEdit('${key}')">EDITAR</button>
+                    <a href="${waLink}" class="action-btn btn-wa" target="_blank">CHAT</a>
+                    <button class="action-btn btn-delete" onclick="deleteItem('bot_users/${key}')">X</button>
+                </td>
+            </tr>`;
+        });
+    });
+
+    function prepareUserEdit(key) {
+        const u = usersCache[key];
+        document.getElementById("u-key").value = key;
+        document.getElementById("u-old-phone").value = u.number || u.phone || "";
+        document.getElementById("u-name").value = u.name || u.whatsapp_name || "";
+        document.getElementById("u-phone").value = u.number || u.phone || "";
+        document.getElementById("u-form-title").innerText = "EDITANDO CLIENTE: " + (u.name || u.whatsapp_name);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function saveUser() {
+        const key = document.getElementById("u-key").value;
+        const oldPh = document.getElementById("u-old-phone").value;
+        const nN = document.getElementById("u-name").value.trim();
+        const nP = document.getElementById("u-phone").value.trim();
+        if(!key) return alert("Seleccione un usuario");
+
+        const data = (await db.ref("bot_users/" + key).once("value")).val() || {};
+        data.name = nN; data.number = nP; data.phone = nP; data.last_seen = data.last_seen || Date.now();
+
+        if (nP !== oldPh && nP !== "") {
+            await db.ref("bot_users/" + nP).set(data);
+            await db.ref("bot_users/" + key).remove();
         } else {
-            await db.ref("products").push(productData);
-            alert("Producto guardado");
+            await db.ref("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
         }
-        resetForm();
+        alert("Ficha Sincronizada"); resetUserForm();
     }
 
-    function editProduct(id, name, price, desc, img) {
-        document.getElementById("edit-id").value = id;
-        document.getElementById("name").value = name;
-        document.getElementById("price").value = price;
-        document.getElementById("description").value = desc;
-        document.getElementById("imageUrl").value = img;
-
-        document.getElementById("form-title").innerText = "EDITANDO PRODUCTO";
-        document.getElementById("btn-save").innerText = "ACTUALIZAR PRECIO / INFO";
-        document.getElementById("btn-cancel").classList.remove("hidden");
-        window.scrollTo(0,0);
+    function resetUserForm() {
+        document.getElementById("u-key").value = "";
+        document.getElementById("u-name").value = "";
+        document.getElementById("u-phone").value = "";
+        document.getElementById("u-form-title").innerText = "FICHA DE CLIENTE";
     }
 
-    function resetForm() {
-        document.getElementById("edit-id").value = "";
-        document.getElementById("name").value = "";
-        document.getElementById("price").value = "";
-        document.getElementById("description").value = "";
-        document.getElementById("imageUrl").value = "";
+    // --- PEDIDOS Y MENSAJES ---
+    db.ref("orders").on("value", snap => {
+        const list = document.getElementById("o-list-body"); list.innerHTML = "";
+        snap.forEach(c => {
+            const o = c.val(); const date = o.timestamp ? new Date(o.timestamp).toLocaleString() : '-';
+            list.innerHTML += `<tr><td>${o.username}</td><td>${o.phone}</td><td>${o.productName}</td><td><small>${date}</small></td><td><button class='action-btn btn-delete' onclick='deleteItem("orders/${c.key}")'>X</button></td></tr>`;
+        });
+    });
 
-        document.getElementById("form-title").innerText = "NUEVO PRODUCTO";
-        document.getElementById("btn-save").innerText = "GUARDAR ITEM";
-        document.getElementById("btn-cancel").classList.add("hidden");
-    }
+    db.ref("talk_requests").on("value", snap => {
+        const list = document.getElementById("m-list-body"); list.innerHTML = "";
+        snap.forEach(c => {
+            const m = c.val(); const date = new Date(m.timestamp).toLocaleString();
+            const contact = m.number || m.whatsapp_id || '-';
+            list.innerHTML += `<tr><td><small>${date}</small></td><td>${m.name}</td><td>${contact}</td><td><a href="https://wa.me/${contact.toString().replace(/\D/g,'')}" class="action-btn btn-wa" target="_blank">HABLAR</a></td><td><button class='action-btn btn-delete' onclick='deleteItem("talk_requests/${c.key}")'>X</button></td></tr>`;
+        });
+    });
 
-    async function deleteItem(path) {
-        if(confirm("¿Estás seguro?")) await db.ref(path).remove();
-    }
-
-    loadProducts();
+    async function deleteItem(path) { if(confirm("¿Eliminar permanentemente?")) await db.ref(path).remove(); }
+    async function resetBotSession() { if(confirm("¿CERRAR SESIÓN GLOBAL?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
 </script>
-
 </body>
 </html>
