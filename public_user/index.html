@@ -299,6 +299,7 @@
     <div id="product-grid" class="product-grid"></div>
 </div>
 
+<!-- Modal de Pedido -->
 <div id="orderModal" class="modal">
     <div class="modal-content">
         <h3 class="modal-header">CONFIRMAR PEDIDO</h3>
@@ -309,6 +310,19 @@
     </div>
 </div>
 
+<!-- Modal de Rastreo -->
+<div id="trackingModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h3 class="modal-header">RASTREAR MI PEDIDO</h3>
+        <p style="color:var(--text-med); font-size: 0.9rem;">Ingresa tu número de WhatsApp para ver el estado de tus compras.</p>
+        <input type="tel" id="trackPhone" placeholder="Ej: 5216681234567">
+        <button class="btn-buy" onclick="trackOrders()">BUSCAR PEDIDOS</button>
+        <div id="trackingResults" style="margin-top: 25px; text-align: left; max-height: 300px; overflow-y: auto;"></div>
+        <button onclick="document.getElementById('trackingModal').style.display='none'" style="background:none; border:none; color:var(--text-med); width:100%; margin-top:20px; cursor:pointer; font-weight:bold">CERRAR</button>
+    </div>
+</div>
+
+<!-- Modal de Ticket PDF -->
 <div id="ticketModal" class="modal">
     <div class="modal-content" id="ticket-capture" style="max-width: 400px; background: white; color: black; padding: 0; overflow: hidden; border-radius: 0;">
         <div style="background: #000; padding: 20px; text-align: center;">
@@ -369,17 +383,20 @@
     function playKeyboardSound() {
         const sound = document.getElementById("keyboard-sound");
         if (sound) {
+            sound.pause();
             sound.currentTime = 0;
             sound.play().catch(e => {});
         }
     }
 
-    // Sonido al escribir
-    document.addEventListener('input', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-            playKeyboardSound();
-        }
-    });
+    // Desbloqueo de audio
+    document.addEventListener('mousedown', () => {
+        const a = document.getElementById("keyboard-sound");
+        if (a) { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); }
+    }, { once: true });
+
+    document.addEventListener('keydown', () => playKeyboardSound());
+    window.addEventListener('focus', () => playKeyboardSound());
 
     db.ref("products").on("value", (snap) => {
         document.getElementById("loader").style.display = "none";
@@ -401,7 +418,6 @@
             }
 
             if (currentStock <= 0 || isNaN(currentStock)) {
-                console.log("Ocultando producto sin stock:", p.name);
                 return;
             }
 
@@ -410,14 +426,14 @@
             const imgUrl = p.imageUrl || "https://via.placeholder.com/400x300?text=Premium+Item";
 
             productCard.innerHTML = `
-                <img src="${imgUrl}" alt="${p.name}" class="product-image">
-                <div class="product-info">
-                    <span class="product-category">${p.category || 'EXCLUSIVO'}</span>
-                    <h3 class="product-name">${p.name}</h3>
-                    <div class="product-price">$${p.price}</div>
-                    <p class="product-desc">${p.description || 'Sin descripción detallada disponible.'}</p>
-                    <div class="product-stock">Stock Disponible: ${currentStock}</div>
-                    <button class="btn-buy" onclick="openModal('${child.key}', '${p.name}', ${p.price}, '${imgUrl}')">LO QUIERO</button>
+                <img src=\"${imgUrl}\" alt=\"${p.name}\" class=\"product-image\">
+                <div class=\"product-info\">
+                    <span class=\"product-category\">${p.category || 'EXCLUSIVO'}</span>
+                    <h3 class=\"product-name\">${p.name}</h3>
+                    <div class=\"product-price\">$${p.price}</div>
+                    <p class=\"product-desc\">${p.description || 'Sin descripción detallada disponible.'}</p>
+                    <div class=\"product-stock\">Stock Disponible: ${currentStock}</div>
+                    <button class=\"btn-buy\" onclick=\"openModal('${child.key}', '${p.name}', ${p.price}, '${imgUrl}')\">LO QUIERO</button>
                 </div>
             `;
             grid.appendChild(productCard);
@@ -437,8 +453,8 @@
     }
 
     async function trackOrders() {
-        const inputPhone = document.getElementById("trackPhone").value.trim().replace(/\D/g,'');
-        if (!inputPhone) return alert("Ingresa tu número de WhatsApp");
+        const inputPhoneRaw = document.getElementById("trackPhone").value.trim().replace(/\D/g,'');
+        if (!inputPhoneRaw || inputPhoneRaw.length < 5) return alert("Ingresa tu número de WhatsApp real");
 
         const resDiv = document.getElementById("trackingResults");
         resDiv.innerHTML = "<p style='text-align:center;'>Buscando en el sistema Lobo Store...</p>";
@@ -451,14 +467,14 @@
                 const o = child.val();
                 if (!o.phone) return;
 
-                // Normalizar ambos números: tomar solo los últimos 10 dígitos (estándar México)
-                const oPhoneNormalized = o.phone.toString().replace(/\D/g,'').slice(-10);
-                const inputPhoneNormalized = inputPhone.slice(-10);
+                // Normalizar: solo números
+                const oPhone = o.phone.toString().replace(/\D/g,'');
 
-                if (oPhoneNormalized === inputPhoneNormalized && inputPhoneNormalized.length === 10) {
+                // Coincidencia flexible: uno contiene al otro
+                if (oPhone.includes(inputPhoneRaw) || inputPhoneRaw.includes(oPhone)) {
                     found = true;
                     const status = o.status || 'PENDIENTE';
-                    const statusColor = status === "ENTREGADO" ? "#25D366" : (status === "ENVIADO" ? "#BC13FE" : "#00F2FF");
+                    const statusColor = status === "COMPRADO" ? "#25D366" : (status === "EN PROCESO" ? "#BC13FE" : "#00F2FF");
 
                     const orderItem = document.createElement("div");
                     orderItem.style.background = "rgba(255,255,255,0.05)";
@@ -468,17 +484,17 @@
                     orderItem.style.borderLeft = `4px solid ${statusColor}`;
 
                     orderItem.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                            <strong style="color:white; font-size:1.1rem;">${o.name || 'Producto'}</strong>
-                            <span style="color:${statusColor}; font-size:0.7rem; font-weight:900; border:1px solid ${statusColor}; padding:3px 8px; border-radius:6px; text-transform:uppercase;">${status}</span>
+                        <div style=\"display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;\">
+                            <strong style=\"color:white; font-size:1.1rem;\">${o.name || 'Producto'}</strong>
+                            <span style=\"color:${statusColor}; font-size:0.7rem; font-weight:900; border:1px solid ${statusColor}; padding:3px 8px; border-radius:6px; text-transform:uppercase;\">${status}</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; color:var(--text-med); font-size:0.8rem;">
+                        <div style=\"display:flex; justify-content:space-between; color:var(--text-med); font-size:0.8rem;\">
                             <span>Precio: $${o.price || '-'}</span>
                             <span>ID: #${child.key.slice(-5).toUpperCase()}</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;">
-                            <p style="margin:0; font-size:0.7rem; color:grey;">📅 Compra: ${new Date(o.timestamp || Date.now()).toLocaleString()}</p>
-                            <button class="btn-track" style="margin:0; padding:5px 10px; font-size:0.6rem; border-color:var(--neon-purple); color:var(--neon-purple);" onclick='showDigitalTicket("${child.key}", ${JSON.stringify(o).replace(/"/g, '&quot;')})'>GENERAR TICKET</button>
+                        <div style=\"display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;\">
+                            <p style=\"margin:0; font-size:0.7rem; color:grey;\">📅 Compra: ${new Date(o.timestamp || Date.now()).toLocaleString()}</p>
+                            <button class=\"btn-track\" style=\"margin:0; padding:5px 10px; font-size:0.6rem; border-color:var(--neon-purple); color:var(--neon-purple);\" onclick='showDigitalTicket(\"${child.key}\", ${JSON.stringify(o).replace(/"/g, '&quot;')})'>GENERAR TICKET</button>
                         </div>
                     `;
                     resDiv.appendChild(orderItem);
@@ -487,9 +503,9 @@
 
             if (!found) {
                 resDiv.innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <p style="color:var(--danger); font-weight:bold; margin:0;">❌ SIN RESULTADOS</p>
-                        <p style="color:grey; font-size:0.8rem;">No hay pedidos registrados para: ${inputPhone}</p>
+                    <div style=\"text-align:center; padding:20px;\">
+                        <p style=\"color:var(--danger); font-weight:bold; margin:0;\">❌ SIN RESULTADOS</p>
+                        <p style=\"color:grey; font-size:0.8rem;\">No hay pedidos registrados para: ${inputPhoneRaw}</p>
                     </div>
                 `;
             }
@@ -517,8 +533,6 @@
             html2canvas:  { scale: 2, useCORS: true },
             jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
         };
-
-        // Escondemos los botones de la captura si estuvieran dentro, pero están fuera en este diseño.
         html2pdf().set(opt).from(element).save();
     }
 
@@ -530,7 +544,7 @@
         // Guardar el pedido incluyendo el ID del producto (selectedProd.id)
         const orderRef = await db.ref("orders").push({
             ...selectedProd,
-            productId: selectedProd.id, // Guardamos el ID real de Firebase del producto
+            productId: selectedProd.id,
             username: n,
             phone: p,
             status: "PENDIENTE",
@@ -539,13 +553,12 @@
 
         const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, acabo de ver este producto en la web y me interesa comprarlo.`;
 
-        // Cambiar contenido del modal para mostrar estado
         document.querySelector(".modal-content").innerHTML = `
-            <h3 class="modal-header">¡PEDIDO REGISTRADO!</h3>
-            <div style="font-size:3rem; margin:20px 0;">📦</div>
-            <p style="color:var(--neon-cyan); font-weight:bold;">ESTADO: PENDIENTE</p>
+            <h3 class=\"modal-header\">¡PEDIDO REGISTRADO!</h3>
+            <div style=\"font-size:3rem; margin:20px 0;\">📦</div>
+            <p style=\"color:var(--neon-cyan); font-weight:bold;\">ESTADO: PENDIENTE</p>
             <p>Se ha enviado tu solicitud. Por favor, completa el envío por WhatsApp para que el asesor te atienda.</p>
-            <button class="btn-buy" onclick="window.open('https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}', '_blank'); location.reload();">ENVIAR A WHATSAPP AHORA</button>
+            <button class=\"btn-buy\" onclick=\"window.open('https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}', '_blank'); location.reload();\">ENVIAR A WHATSAPP AHORA</button>
         `;
     }
 </script>

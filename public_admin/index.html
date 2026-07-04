@@ -455,40 +455,54 @@
     function playKeyboardSound() {
         const sound = document.getElementById("keyboard-sound");
         if (sound) {
+            sound.pause();
             sound.currentTime = 0;
-            sound.play().catch(e => {});
+            sound.play().catch(e => console.log("Teclado bloqueado:", e));
         }
     }
 
-    // Sonido al escribir en cualquier input o textarea
-    document.addEventListener('input', (e) => {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-            playKeyboardSound();
-        }
-    });
+    // Desbloqueo agresivo de audio al primer clic o toque
+    document.addEventListener('mousedown', () => {
+        const audios = ['notif-sound', 'status-sound', 'keyboard-sound'];
+        audios.forEach(id => {
+            const a = document.getElementById(id);
+            if (a) { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); }
+        });
+    }, { once: true });
+
+    document.addEventListener('keydown', () => playKeyboardSound());
+    window.addEventListener('focus', () => playKeyboardSound());
 
     async function updateOrderStatus(orderId, newStatus) {
-        // 1. Obtener los datos del pedido antes de actualizar
         const orderSnap = await db.ref("orders/" + orderId).once("value");
         const order = orderSnap.val();
 
-        // 2. Si el nuevo estado es "COMPRADO", descontar el stock
-        if (newStatus === "COMPRADO" && order.productId) {
-            const productRef = db.ref("products/" + order.productId);
-            const productSnap = await productRef.once("value");
+        if (newStatus === "COMPRADO") {
+            let targetProductId = order.productId;
 
-            if (productSnap.exists()) {
-                const currentStock = parseInt(productSnap.val().stock) || 0;
-                if (currentStock > 0) {
-                    await productRef.update({ stock: currentStock - 1 });
-                    showFloatingAlert("Stock descontado exitosamente 📉");
-                } else {
-                    alert("⚠️ ¡Atención! El stock ya estaba en 0. No se pudo descontar.");
+            // FALLBACK: Si no hay ID, buscar por nombre exacto
+            if (!targetProductId && order.name) {
+                const prodSnap = await db.ref("products").once("value");
+                prodSnap.forEach(pChild => {
+                    if (pChild.val().name === order.name) {
+                        targetProductId = pChild.key;
+                    }
+                });
+            }
+
+            if (targetProductId) {
+                const productRef = db.ref("products/" + targetProductId);
+                const productSnap = await productRef.once("value");
+                if (productSnap.exists()) {
+                    const currentStock = parseInt(productSnap.val().stock) || 0;
+                    if (currentStock > 0) {
+                        await productRef.update({ stock: currentStock - 1 });
+                        showFloatingAlert("Stock descontado (Auto-Match) 📉");
+                    }
                 }
             }
         }
 
-        // 3. Actualizar el estado del pedido
         await db.ref("orders/" + orderId).update({ status: newStatus });
         playStatusSound();
         showFloatingAlert("Estado actualizado a: " + newStatus);
