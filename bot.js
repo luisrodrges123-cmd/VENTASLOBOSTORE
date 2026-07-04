@@ -153,8 +153,7 @@ onValue(ref(db, "orders"), (snapshot) => {
 
             const statusEmoji = {
                 "EN PROCESO": "⚙️",
-                "ENVIADO": "🚚",
-                "ENTREGADO": "🎁",
+                "COMPRADO": "✅",
                 "CANCELADO": "❌"
             }[order.status.toUpperCase()] || "📋";
 

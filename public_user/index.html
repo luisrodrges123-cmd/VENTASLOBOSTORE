@@ -309,68 +309,7 @@
 <div id="ticketModal" class="modal">
     <div class="modal-content" id="ticket-capture" style="max-width: 400px; background: white; color: black; padding: 0; overflow: hidden; border-radius: 0;">
         <div style="background: #000; padding: 20px; text-align: center;">
-            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" style="width: 80px; filter: drop-shadow(0 0 5px #00F2FF);">
-            <h2 style="color: #00F2FF; margin: 10px 0 0 0; font-size: 1.2rem; letter-spacing: 2px;">LOBO STORE</h2>
-            <p style="color: #E0E0E0; font-size: 0.6rem; margin: 5px 0 0 0;">TECNOLOGÍA PREMIUM & EXCLUSIVA</p>
-        </div>
-
-        <div style="padding: 30px; font-family: 'Courier New', monospace; position: relative;">
-            <div style="text-align: center; border-bottom: 2px dashed #ccc; padding-bottom: 15px; margin-bottom: 20px;">
-                <h3 style="margin: 0; font-size: 1rem;">COMPROBANTE DE PEDIDO</h3>
-                <p id="t-id" style="margin: 5px 0; font-weight: bold;"></p>
-            </div>
-
-            <div style="font-size: 0.9rem; line-height: 1.6;">
-                <div style="display:flex; justify-content: space-between;"><span>FECHA:</span> <span id="t-date"></span></div>
-                <div style="display:flex; justify-content: space-between;"><span>CLIENTE:</span> <span id="t-client" style="font-weight: bold;"></span></div>
-                <div style="display:flex; justify-content: space-between;"><span>TELÉFONO:</span> <span id="t-phone"></span></div>
-
-                <div style="margin: 20px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee; padding: 10px 0;">
-                    <div style="display:flex; justify-content: space-between; font-weight: bold;">
-                        <span>PRODUCTO</span>
-                        <span>TOTAL</span>
-                    </div>
-                    <div style="display:flex; justify-content: space-between; margin-top: 5px;">
-                        <span id="t-product" style="max-width: 70%;"></span>
-                        <span id="t-price"></span>
-                    </div>
-                </div>
-
-                <div style="text-align: center; margin-top: 10px;">
-                    <span id="t-status" style="border: 2px solid black; padding: 5px 15px; display: inline-block; font-weight: 900; transform: rotate(-5deg);"></span>
-                </div>
-            </div>
-
-            <div style="text-align: center; margin-top: 30px; font-size: 0.7rem; color: #666;">
-                <p>Escanea este comprobante en tienda o envíalo por WhatsApp para seguimiento.</p>
-                <p>¡Gracias por ser parte de la manada! 🐺</p>
-            </div>
-        </div>
-
-        <div style="padding: 15px; background: #f9f9f9; border-top: 1px solid #ddd; display: flex; gap: 10px;">
-            <button class="btn-buy" style="margin: 0; padding: 10px; font-size: 0.8rem; background: #000;" onclick="downloadPDF()">DESCARGAR TICKET (PDF)</button>
-            <button onclick="document.getElementById('ticketModal').style.display='none'" style="flex:1; background:none; border: 1px solid #ccc; border-radius: 12px; cursor:pointer; font-weight:bold">CERRAR</button>
-        </div>
-    </div>
-</div>
-
-<div id="trackingModal" class="modal">
-    <div class="modal-content" style="max-width: 500px;">
-        <h3 class="modal-header">RASTREAR MI PEDIDO</h3>
-        <p style="color:var(--text-med); font-size: 0.9rem;">Ingresa tu número de WhatsApp para ver el estado de tus compras.</p>
-        <input type="tel" id="trackPhone" placeholder="Ej: 5216681234567">
-        <button class="btn-buy" onclick="trackOrders()">BUSCAR PEDIDOS</button>
-
-        <div id="trackingResults" style="margin-top: 25px; text-align: left; max-height: 300px; overflow-y: auto;"></div>
-
-        <button onclick="document.getElementById('trackingModal').style.display='none'" style="background:none; border:none; color:var(--text-med); width:100%; margin-top:20px; cursor:pointer; font-weight:bold">CERRAR</button>
-    </div>
-</div>
-
-<div id="ticketModal" class="modal">
-    <div class="modal-content" id="ticket-capture" style="max-width: 400px; background: white; color: black; padding: 0; overflow: hidden; border-radius: 0;">
-        <div style="background: #000; padding: 20px; text-align: center;">
-            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" style="width: 80px; filter: drop-shadow(0 0 5px #00F2FF);">
+            <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" style="width: 80px; filter: drop-shadow(0 0 5px #00F2FF);" alt="Logo">
             <h2 style="color: #00F2FF; margin: 10px 0 0 0; font-size: 1.2rem; letter-spacing: 2px;">LOBO STORE</h2>
             <p style="color: #E0E0E0; font-size: 0.6rem; margin: 5px 0 0 0;">TECNOLOGÍA PREMIUM & EXCLUSIVA</p>
         </div>
@@ -460,15 +399,15 @@
                     <div class="product-price">$${p.price}</div>
                     <p class="product-desc">${p.description || 'Sin descripción detallada disponible.'}</p>
                     <div class="product-stock">Stock Disponible: ${currentStock}</div>
-                    <button class="btn-buy" onclick="openModal('${p.name}', ${p.price}, '${imgUrl}')">LO QUIERO</button>
+                    <button class="btn-buy" onclick="openModal('${child.key}', '${p.name}', ${p.price}, '${imgUrl}')">LO QUIERO</button>
                 </div>
             `;
             grid.appendChild(productCard);
         });
     });
 
-    function openModal(name, price, img) {
-        selectedProd = { name, price, img };
+    function openModal(id, name, price, img) {
+        selectedProd = { id, name, price, img };
         document.getElementById("orderModal").style.display = "block";
     }
 
@@ -568,7 +507,15 @@
         const p = document.getElementById("custPhone").value;
         if (!n || !p) return alert("Por favor, ingresa tus datos para procesar el pedido.");
 
-        const orderRef = await db.ref("orders").push({ ...selectedProd, username: n, phone: p, status: "PENDIENTE", timestamp: Date.now() });
+        // Guardar el pedido incluyendo el ID del producto (selectedProd.id)
+        const orderRef = await db.ref("orders").push({
+            ...selectedProd,
+            productId: selectedProd.id, // Guardamos el ID real de Firebase del producto
+            username: n,
+            phone: p,
+            status: "PENDIENTE",
+            timestamp: Date.now()
+        });
 
         const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, acabo de ver este producto en la web y me interesa comprarlo.`;
 

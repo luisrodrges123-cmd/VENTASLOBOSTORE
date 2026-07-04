@@ -88,8 +88,9 @@
         <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - MODO PREMIUM ADMIN</h1>
     </div>
 
-    <!-- Audio de Notificación Premium -->
+    <!-- Audios de Notificación Premium -->
     <audio id="notif-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsNotificationSoundss.wav" preload="auto"></audio>
+    <audio id="status-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsStartup.wav" preload="auto"></audio>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
@@ -199,7 +200,17 @@
     function playNotification() {
         const sound = document.getElementById("notif-sound");
         if (sound) {
-            sound.play().catch(e => console.log("Audio bloqueado por navegador:", e));
+            // Forzar recarga del audio para asegurar que el archivo esté listo
+            sound.load();
+            const promise = sound.play();
+            if (promise !== undefined) {
+                promise.then(_ => {
+                    console.log("Audio reproducido con éxito");
+                }).catch(error => {
+                    console.log("Autoplay bloqueado. Haz clic en la página primero.");
+                    showFloatingAlert("📢 Haz clic aquí para activar sonidos");
+                });
+            }
         }
     }
 
@@ -409,7 +420,7 @@
         snap.forEach(c => {
             const o = c.val();
             const status = o.status || "PENDIENTE";
-            const color = status === "ENTREGADO" ? "var(--success)" : (status === "ENVIADO" ? "var(--neon-purple)" : "var(--neon-cyan)");
+            const color = status === "COMPRADO" ? "var(--success)" : (status === "EN PROCESO" ? "var(--neon-purple)" : "var(--neon-cyan)");
 
             list.innerHTML += `<tr>
                 <td><strong>${o.username}</strong></td>
@@ -420,8 +431,7 @@
                         <select onchange="updateOrderStatus('${c.key}', this.value)" style="background:#000; color:${color}; border:1px solid ${color}; padding:5px; border-radius:8px; font-weight:bold; font-size:0.7rem;">
                             <option value="PENDIENTE" ${status === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
                             <option value="EN PROCESO" ${status === 'EN PROCESO' ? 'selected' : ''}>EN PROCESO</option>
-                            <option value="ENVIADO" ${status === 'ENVIADO' ? 'selected' : ''}>ENVIADO</option>
-                            <option value="ENTREGADO" ${status === 'ENTREGADO' ? 'selected' : ''}>ENTREGADO</option>
+                            <option value="COMPRADO" ${status === 'COMPRADO' ? 'selected' : ''}>COMPRADO</option>
                             <option value="CANCELADO" ${status === 'CANCELADO' ? 'selected' : ''}>CANCELADO</option>
                         </select>
                         <button class="action-btn" style="padding:5px; background:var(--neon-purple);" title="Forzar Notificación WhatsApp" onclick="forceNotify('${c.key}')">🔔</button>
@@ -432,8 +442,38 @@
         });
     });
 
-    async function updateOrderStatus(id, newStatus) {
-        await db.ref("orders/" + id).update({ status: newStatus });
+    function playStatusSound() {
+        const sound = document.getElementById("status-sound");
+        if (sound) {
+            sound.load();
+            sound.play().catch(e => console.log("Audio de estado bloqueado:", e));
+        }
+    }
+
+    async function updateOrderStatus(orderId, newStatus) {
+        // 1. Obtener los datos del pedido antes de actualizar
+        const orderSnap = await db.ref("orders/" + orderId).once("value");
+        const order = orderSnap.val();
+
+        // 2. Si el nuevo estado es "COMPRADO", descontar el stock
+        if (newStatus === "COMPRADO" && order.productId) {
+            const productRef = db.ref("products/" + order.productId);
+            const productSnap = await productRef.once("value");
+
+            if (productSnap.exists()) {
+                const currentStock = parseInt(productSnap.val().stock) || 0;
+                if (currentStock > 0) {
+                    await productRef.update({ stock: currentStock - 1 });
+                    showFloatingAlert("Stock descontado exitosamente 📉");
+                } else {
+                    alert("⚠️ ¡Atención! El stock ya estaba en 0. No se pudo descontar.");
+                }
+            }
+        }
+
+        // 3. Actualizar el estado del pedido
+        await db.ref("orders/" + orderId).update({ status: newStatus });
+        playStatusSound();
         showFloatingAlert("Estado actualizado a: " + newStatus);
     }
 
