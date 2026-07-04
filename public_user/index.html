@@ -311,7 +311,10 @@
         <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo">
     </a>
     <h1>LOBO STORE</h1>
-    <button class="btn-track" onclick="showTrackingModal()">MI PEDIDO 📦</button>
+    <div style="margin-left: auto; display: flex; gap: 10px;">
+        <button class="btn-track" id="btn-vip" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="toggleVipMode()">ZONA VIP 💎</button>
+        <button class="btn-track" onclick="showTrackingModal()">MI PEDIDO 📦</button>
+    </div>
 </div>
 
 <div class="hero">
@@ -330,7 +333,7 @@
         <a href="#" onclick="alert('Políticas de Envío: Envíos locales el mismo día, envíos nacionales de 2 a 4 días hábiles.')">Envíos</a>
         <a href="#" onclick="alert('Privacidad: Tus datos están protegidos y solo se usan para procesar tu pedido.')">Privacidad</a>
     </div>
-    <p>© 2025 LOBO STORE - Todos los derechos reservados.</p>
+    <p>© 2026 LOBO STORE - Todos los derechos reservados.</p>
     <p style="font-size: 0.6rem; margin-top: 10px; opacity: 0.5;">Queda prohibida la reproducción total o parcial de este catálogo sin autorización.</p>
 </footer>
 
@@ -416,6 +419,37 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let selectedProd = null;
+    let isVipEnabled = false;
+
+    function toggleVipMode() {
+        if (!isVipEnabled) {
+            const key = prompt("Ingrese la Clave VIP 💎:");
+            if (key === "LOBOVIP") {
+                isVipEnabled = true;
+                document.getElementById("btn-vip").style.background = "var(--neon-purple)";
+                document.getElementById("btn-vip").style.color = "white";
+                document.getElementById("btn-vip").innerText = "VIP ACTIVO 💎";
+                alert("¡BIENVENIDO A LA ZONA EXCLUSIVA! 🐺💎");
+                location.reload(); // Recargar para aplicar filtros
+            } else {
+                alert("Clave incorrecta. Solo para miembros de la manada.");
+            }
+        } else {
+            isVipEnabled = false;
+            localStorage.removeItem("vip_session");
+            location.reload();
+        }
+    }
+
+    // Persistencia de sesión VIP
+    if (localStorage.getItem("vip_session") === "true") {
+        isVipEnabled = true;
+    }
+
+    // Si se activa en esta carga, guardar
+    window.addEventListener('beforeunload', () => {
+        if (isVipEnabled) localStorage.setItem("vip_session", "true");
+    });
 
     function playKeyboardSound() {
         const sound = document.getElementById("keyboard-sound");
@@ -447,6 +481,10 @@
 
         snap.forEach((child) => {
             const p = child.val();
+            const isVip = p.isVip === true;
+
+            // FILTRO VIP: Si es VIP y no está activado el modo, ocultar
+            if (isVip && !isVipEnabled) return;
 
             // FILTRO ESTRICTO: Si no hay stock o es 0, no mostrar
             let currentStock = 0;
@@ -460,15 +498,22 @@
 
             const productCard = document.createElement("div");
             productCard.className = "product-card";
+            if (isVip) {
+                productCard.style.border = "2px solid var(--neon-purple)";
+                productCard.style.boxShadow = "0 0 20px rgba(188, 19, 254, 0.2)";
+            }
             const imgUrl = p.imageUrl || "https://via.placeholder.com/400x300?text=Premium+Item";
 
             productCard.innerHTML = `
+                ${isVip ? '<div style="position:absolute; top:10px; right:10px; background:var(--neon-purple); color:white; padding:5px 10px; border-radius:8px; font-weight:bold; font-size:0.7rem; z-index:10;">EXCLUSIVO VIP 💎</div>' : ''}
                 <img src=\"${imgUrl}\" alt=\"${p.name}\" class=\"product-image\">
                 <div class=\"product-info\">
                     <span class=\"product-category\">${p.category || 'EXCLUSIVO'}</span>
-                    <h3 class=\"product-name\">${p.name}</h3>
+                    <h3 class=\"product-name\">${p.name} ${isVip ? '💎' : ''}</h3>
                     <div class=\"product-price\">$${p.price}</div>
-                    <p class=\"product-desc\">${p.description || 'Sin descripción detallada disponible.'}</p>
+                    <div class=\"product-desc\">
+                        <span class="desc-text" id="desc-${child.key}">${p.description || 'Sin descripción detallada.'}</span>
+                    </div>
                     <div class=\"product-stock\">Stock Disponible: ${currentStock}</div>
                     <button class=\"btn-buy\" onclick=\"openModal('${child.key}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', '${(p.category || '').replace(/'/g, "\\'")}', '${(p.description || '').replace(/'/g, "\\'").replace(/\n/g, ' ')}')\">LO QUIERO</button>
                 </div>
