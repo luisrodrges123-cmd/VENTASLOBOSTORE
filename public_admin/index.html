@@ -91,6 +91,7 @@
     <!-- Audios de Notificación Premium -->
     <audio id="notif-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsNotificationSoundss.wav" preload="auto"></audio>
     <audio id="status-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsStartup.wav" preload="auto"></audio>
+    <audio id="keyboard-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/teclado.wav" preload="auto"></audio>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
@@ -279,6 +280,7 @@
     }
 
     function showTab(t) {
+        playKeyboardSound();
         ['p','u','o','m','l','c'].forEach(s => {
             const sec = document.getElementById('sec-'+s); const tab = document.getElementById('tab-'+s);
             if(sec) sec.classList.add('hidden'); if(tab) tab.classList.remove('active');
@@ -449,6 +451,21 @@
             sound.play().catch(e => console.log("Audio de estado bloqueado:", e));
         }
     }
+
+    function playKeyboardSound() {
+        const sound = document.getElementById("keyboard-sound");
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => {});
+        }
+    }
+
+    // Sonido al escribir en cualquier input o textarea
+    document.addEventListener('input', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            playKeyboardSound();
+        }
+    });
 
     async function updateOrderStatus(orderId, newStatus) {
         // 1. Obtener los datos del pedido antes de actualizar
