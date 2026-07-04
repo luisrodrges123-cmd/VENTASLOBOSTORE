@@ -478,6 +478,23 @@
         }
     }
 
+    // Intento de reproducción automática persistente
+    function tryAutoplay() {
+        const welcome = document.getElementById("welcome-sound");
+        if (welcome) {
+            welcome.muted = false;
+            welcome.play().then(() => {
+                console.log("Autoplay exitoso");
+                const starter = document.getElementById("audio-starter");
+                if (starter) starter.style.display = "none";
+            }).catch(e => {
+                console.log("Autoplay bloqueado, esperando interacción...");
+            });
+        }
+    }
+
+    window.addEventListener('load', tryAutoplay);
+
     // Desbloqueo agresivo y forzado de audio
     async function unlockAllAudio() {
         const starter = document.getElementById("audio-starter");
@@ -485,7 +502,6 @@
 
         const sounds = ['notif-sound', 'status-sound', 'keyboard-sound', 'welcome-sound'];
 
-        // Crear un contexto de audio para "despertar" el motor de sonido del navegador
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (AudioContext) {
             const ctx = new AudioContext();
@@ -501,25 +517,18 @@
                         a.currentTime = 0;
                         await a.play();
                     } else {
-                        // "Priming": reproducir y pausar rápidamente para habilitar
                         await a.play();
                         a.pause();
                         a.currentTime = 0;
                     }
-                } catch (e) {
-                    console.log(`Error forzando ${id}:`, e);
-                }
+                } catch (e) {}
             }
         }
-        // Limpiar eventos
-        ['mousedown', 'click', 'touchstart', 'keydown'].forEach(ev =>
-            document.removeEventListener(ev, unlockAllAudio)
-        );
     }
 
-    // Escuchar cualquier interacción para forzar el inicio
-    ['mousedown', 'click', 'touchstart', 'keydown'].forEach(ev =>
-        document.addEventListener(ev, unlockAllAudio, { once: false })
+    // Escuchar cualquier cosa para disparar el sonido
+    ['mousedown', 'click', 'touchstart', 'keydown', 'mousemove'].forEach(ev =>
+        document.addEventListener(ev, unlockAllAudio, { once: true })
     );
 
     document.addEventListener('keydown', () => playKeyboardSound());

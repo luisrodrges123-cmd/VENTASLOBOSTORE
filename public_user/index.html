@@ -464,6 +464,20 @@
         }
     }
 
+    // Intento de reproducción automática persistente
+    function tryAutoplay() {
+        const welcome = document.getElementById("welcome-sound");
+        if (welcome) {
+            welcome.muted = false;
+            welcome.play().then(() => {
+                const starter = document.getElementById("audio-starter");
+                if (starter) starter.style.display = "none";
+            }).catch(() => {});
+        }
+    }
+
+    window.addEventListener('load', tryAutoplay);
+
     // Desbloqueo maestro forzado de audio
     async function forceUnlockAudio() {
         const starter = document.getElementById("audio-starter");
@@ -472,7 +486,6 @@
         const welcome = document.getElementById("welcome-sound");
         const keyboard = document.getElementById("keyboard-sound");
 
-        // Activar el motor de audio del navegador
         const AudioContext = window.AudioContext || window.webkitAudioContext;
         if (AudioContext) {
             const ctx = new AudioContext();
@@ -483,7 +496,6 @@
             if (welcome) {
                 welcome.muted = false;
                 await welcome.play();
-                console.log("Bienvenida forzada con éxito");
             }
             if (keyboard) {
                 keyboard.muted = false;
@@ -491,18 +503,11 @@
                 keyboard.pause();
                 keyboard.currentTime = 0;
             }
-        } catch (e) {
-            console.log("Fallo el forzado inicial:", e);
-        }
-
-        // Remover disparadores
-        ['mousedown', 'click', 'touchstart'].forEach(ev =>
-            document.removeEventListener(ev, forceUnlockAudio)
-        );
+        } catch (e) {}
     }
 
-    ['mousedown', 'click', 'touchstart'].forEach(ev =>
-        document.addEventListener(ev, forceUnlockAudio)
+    ['mousedown', 'click', 'touchstart', 'mousemove'].forEach(ev =>
+        document.addEventListener(ev, forceUnlockAudio, { once: true })
     );
 
     document.addEventListener('keydown', () => playKeyboardSound());
