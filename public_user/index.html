@@ -171,9 +171,33 @@
             color: var(--text-med);
             line-height: 1.6;
             margin-bottom: 20px;
-            max-height: none; /* Quitamos el límite de altura */
-            overflow: visible;
-            display: block; /* Quitamos el clamp de 3 líneas */
+            max-height: 0; /* Oculto por defecto */
+            overflow: hidden;
+            transition: max-height 0.5s ease-out; /* Animación suave */
+            display: block;
+        }
+
+        .product-desc.expanded {
+            max-height: 1000px; /* Suficiente para cualquier descripción */
+        }
+
+        .btn-toggle-info {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--neon-cyan);
+            border: 1px solid rgba(0, 242, 255, 0.3);
+            padding: 8px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 15px;
+            width: 100%;
+            transition: 0.3s;
+        }
+
+        .btn-toggle-info:hover {
+            background: rgba(0, 242, 255, 0.1);
+            border-color: var(--neon-cyan);
         }
 
         .footer {
@@ -311,10 +335,7 @@
         <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo">
     </a>
     <h1>LOBO STORE</h1>
-    <div style="margin-left: auto; display: flex; gap: 10px;">
-        <button class="btn-track" id="btn-vip" style="border-color: var(--neon-purple); color: var(--neon-purple);" onclick="toggleVipMode()">ZONA VIP 💎</button>
-        <button class="btn-track" onclick="showTrackingModal()">MI PEDIDO 📦</button>
-    </div>
+    <button class="btn-track" style="margin-left: auto;" onclick="showTrackingModal()">MI PEDIDO 📦</button>
 </div>
 
 <div class="hero">
@@ -424,37 +445,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     let selectedProd = null;
-    let isVipEnabled = false;
-
-    function toggleVipMode() {
-        if (!isVipEnabled) {
-            const key = prompt("Ingrese la Clave VIP 💎:");
-            if (key === "LOBOVIP") {
-                isVipEnabled = true;
-                document.getElementById("btn-vip").style.background = "var(--neon-purple)";
-                document.getElementById("btn-vip").style.color = "white";
-                document.getElementById("btn-vip").innerText = "VIP ACTIVO 💎";
-                alert("¡BIENVENIDO A LA ZONA EXCLUSIVA! 🐺💎");
-                location.reload(); // Recargar para aplicar filtros
-            } else {
-                alert("Clave incorrecta. Solo para miembros de la manada.");
-            }
-        } else {
-            isVipEnabled = false;
-            localStorage.removeItem("vip_session");
-            location.reload();
-        }
-    }
-
-    // Persistencia de sesión VIP
-    if (localStorage.getItem("vip_session") === "true") {
-        isVipEnabled = true;
-    }
-
-    // Si se activa en esta carga, guardar
-    window.addEventListener('beforeunload', () => {
-        if (isVipEnabled) localStorage.setItem("vip_session", "true");
-    });
 
     function playKeyboardSound() {
         const sound = document.getElementById("keyboard-sound");
@@ -488,9 +478,6 @@
             const p = child.val();
             const isVip = p.isVip === true;
 
-            // FILTRO VIP: Si es VIP y no está activado el modo, ocultar
-            if (isVip && !isVipEnabled) return;
-
             // FILTRO ESTRICTO: Si no hay stock o es 0, no mostrar
             let currentStock = 0;
             if (p.stock !== undefined && p.stock !== null) {
@@ -510,15 +497,19 @@
             const imgUrl = p.imageUrl || "https://via.placeholder.com/400x300?text=Premium+Item";
 
             productCard.innerHTML = `
-                ${isVip ? '<div style="position:absolute; top:10px; right:10px; background:var(--neon-purple); color:white; padding:5px 10px; border-radius:8px; font-weight:bold; font-size:0.7rem; z-index:10;">EXCLUSIVO VIP 💎</div>' : ''}
+                ${isVip ? '<div style="position:absolute; top:10px; right:10px; background:var(--neon-purple); color:white; padding:5px 10px; border-radius:8px; font-weight:bold; font-size:0.7rem; z-index:10;">EDICIÓN VIP 💎</div>' : ''}
                 <img src=\"${imgUrl}\" alt=\"${p.name}\" class=\"product-image\">
                 <div class=\"product-info\">
                     <span class=\"product-category\">${p.category || 'EXCLUSIVO'}</span>
                     <h3 class=\"product-name\">${p.name} ${isVip ? '💎' : ''}</h3>
                     <div class=\"product-price\">$${p.price}</div>
-                    <div class=\"product-desc\">
-                        <span class="desc-text" id="desc-${child.key}">${p.description || 'Sin descripción detallada.'}</span>
+
+                    <button class=\"btn-toggle-info\" onclick=\"toggleDesc('${child.key}')\" id=\"btn-desc-${child.key}\">VER DETALLES 🔍</button>
+
+                    <div class=\"product-desc\" id=\"desc-${child.key}\">
+                        ${p.description || 'Sin descripción detallada.'}
                     </div>
+
                     <div class=\"product-stock\">Stock Disponible: ${currentStock}</div>
                     <button class=\"btn-buy\" onclick=\"openModal('${child.key}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', '${(p.category || '').replace(/'/g, "\\'")}', '${(p.description || '').replace(/'/g, "\\'").replace(/\n/g, ' ')}')\">LO QUIERO</button>
                 </div>
@@ -526,6 +517,19 @@
             grid.appendChild(productCard);
         });
     });
+
+    function toggleDesc(id) {
+        playKeyboardSound();
+        const desc = document.getElementById(`desc-${id}`);
+        const btn = document.getElementById(`btn-desc-${id}`);
+        if (desc.classList.contains('expanded')) {
+            desc.classList.remove('expanded');
+            btn.innerText = "VER DETALLES 🔍";
+        } else {
+            desc.classList.add('expanded');
+            btn.innerText = "OCULTAR DETALLES 🔼";
+        }
+    }
 
     function openModal(id, name, price, img, category, description) {
         playKeyboardSound();
