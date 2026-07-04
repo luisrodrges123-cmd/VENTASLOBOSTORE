@@ -440,7 +440,7 @@
                         <img src=\"${o.img || o.imageUrl || 'https://via.placeholder.com/40'}\" style=\"width:40px; height:40px; border-radius:5px; object-fit:cover;\">
                         <div>
                             <div style=\"font-weight:bold;\">${o.name || 'Producto'}</div>
-                            <div style=\"color:var(--neon-cyan); font-size:0.75rem;\">$${o.price || '0'}</div>
+                            <div style=\"color:var(--neon-cyan); font-size:0.75rem;\">Cant: ${o.quantity || 1} | Total: $${o.totalPrice || o.price || '0'}</div>
                         </div>
                     </div>
                 </td>
@@ -511,9 +511,12 @@
                 const productSnap = await productRef.once("value");
                 if (productSnap.exists()) {
                     const currentStock = parseInt(productSnap.val().stock) || 0;
-                    if (currentStock > 0) {
-                        await productRef.update({ stock: currentStock - 1 });
-                        showFloatingAlert("Stock descontado (Auto-Match) 📉");
+                    const buyQty = parseInt(order.quantity) || 1;
+                    if (currentStock >= buyQty) {
+                        await productRef.update({ stock: currentStock - buyQty });
+                        showFloatingAlert(`Stock descontado (-${buyQty}) 📉`);
+                    } else {
+                        alert(`⚠️ Stock insuficiente. Solo quedan ${currentStock} y se pidieron ${buyQty}.`);
                     }
                 }
             }

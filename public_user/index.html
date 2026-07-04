@@ -343,6 +343,10 @@
         <h3 class="modal-header">CONFIRMAR PEDIDO</h3>
         <input type="text" id="custName" placeholder="Tu Nombre Completo">
         <input type="tel" id="custPhone" placeholder="Tu Número de WhatsApp">
+        <div style="margin-bottom: 20px; text-align: left;">
+            <label style="color: var(--neon-cyan); font-size: 0.8rem; font-weight: bold; display: block; margin-bottom: 8px;">CANTIDAD DE ARTÍCULOS:</label>
+            <input type="number" id="custQty" value="1" min="1" style="margin-bottom: 0;">
+        </div>
         <button class="btn-buy" onclick="finalizeOrder()">FINALIZAR POR WHATSAPP</button>
         <button onclick="document.getElementById('orderModal').style.display='none'" style="background:none; border:none; color:var(--text-med); width:100%; margin-top:20px; cursor:pointer; font-weight:bold">VOLVER ATRÁS</button>
     </div>
@@ -388,6 +392,7 @@
                     <div style="margin-top: 10px;">
                         <div id="t-category" style="color: var(--neon-purple); font-size: 0.6rem; font-weight: bold; text-transform: uppercase;"></div>
                         <div id="t-product" style="font-weight: bold; font-size: 0.9rem; margin: 3px 0;"></div>
+                        <div id="t-qty" style="font-size: 0.8rem; color: #333;">CANTIDAD: 1</div>
                         <div id="t-desc-ticket" style="font-size: 0.7rem; color: #666; line-height: 1.3; margin-top: 5px;"></div>
                     </div>
                     <div style="text-align: right; font-weight: bold; margin-top: 10px; font-size: 1.1rem;" id="t-price"></div>
@@ -610,8 +615,9 @@
         document.getElementById("t-phone").innerText = data.phone || "-";
         document.getElementById("t-product").innerText = data.name || "PRODUCTO PREMIUM";
         document.getElementById("t-category").innerText = data.category || "EXCLUSIVO";
+        document.getElementById("t-qty").innerText = "CANTIDAD: " + (data.quantity || 1);
         document.getElementById("t-desc-ticket").innerText = data.description || "";
-        document.getElementById("t-price").innerText = "$" + (data.price || "0.00");
+        document.getElementById("t-price").innerText = "$" + (data.totalPrice || data.price || "0.00");
         document.getElementById("t-status").innerText = (data.status || "PENDIENTE").toUpperCase();
 
         document.getElementById("ticketModal").style.display = "block";
@@ -632,25 +638,30 @@
     async function finalizeOrder() {
         const n = document.getElementById("custName").value;
         const p = document.getElementById("custPhone").value;
+        const q = parseInt(document.getElementById("custQty").value) || 1;
         if (!n || !p) return alert("Por favor, ingresa tus datos para procesar el pedido.");
 
-        // Guardar el pedido incluyendo el ID del producto (selectedProd.id)
+        const totalPrice = (selectedProd.price * q).toFixed(2);
+
+        // Guardar el pedido incluyendo el ID del producto (selectedProd.id) y cantidad
         const orderRef = await db.ref("orders").push({
             ...selectedProd,
             productId: selectedProd.id,
             username: n,
             phone: p,
+            quantity: q,
+            totalPrice: totalPrice,
             status: "PENDIENTE",
             timestamp: Date.now()
         });
 
-        const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Precio:* $${selectedProd.price}\n\nHola, acabo de ver este producto en la web y me interesa comprarlo.`;
+        const msg = `🐺 *NUEVO PEDIDO - LOBO STORE*\n\n*Cliente:* ${n}\n*WhatsApp:* ${p}\n\n*Producto:* ${selectedProd.name}\n*Cantidad:* ${q}\n*Precio Unitario:* $${selectedProd.price}\n*TOTAL:* $${totalPrice}\n\nHola, acabo de ver este producto en la web y me interesa comprarlo.`;
 
         document.querySelector(".modal-content").innerHTML = `
             <h3 class=\"modal-header\">¡PEDIDO REGISTRADO!</h3>
             <div style=\"font-size:3rem; margin:20px 0;\">📦</div>
             <p style=\"color:var(--neon-cyan); font-weight:bold;\">ESTADO: PENDIENTE</p>
-            <p>Se ha enviado tu solicitud. Por favor, completa el envío por WhatsApp para que el asesor te atienda.</p>
+            <p>Se ha enviado tu solicitud por la cantidad de ${q} unidad(es). Por favor, completa el envío por WhatsApp para que el asesor te atienda.</p>
             <button class=\"btn-buy\" onclick=\"window.open('https://api.whatsapp.com/send?phone=5216681431491&text=${encodeURIComponent(msg)}', '_blank'); location.reload();\">ENVIAR A WHATSAPP AHORA</button>
         `;
     }
