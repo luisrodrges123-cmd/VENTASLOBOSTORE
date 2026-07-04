@@ -92,6 +92,7 @@
     <audio id="notif-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsNotificationSoundss.wav" preload="auto"></audio>
     <audio id="status-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/WindowsStartup.wav" preload="auto"></audio>
     <audio id="keyboard-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/teclado.wav" preload="auto"></audio>
+    <audio id="welcome-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/logintrick%20(1)_join%20(2).mp3" preload="auto"></audio>
 
     <div class="tabs">
         <div class="tab active" id="tab-p" onclick="showTab('p')">PRODUCTOS</div>
@@ -471,10 +472,16 @@
 
     // Desbloqueo agresivo de audio al primer clic o toque
     document.addEventListener('mousedown', () => {
-        const audios = ['notif-sound', 'status-sound', 'keyboard-sound'];
+        const audios = ['notif-sound', 'status-sound', 'keyboard-sound', 'welcome-sound'];
         audios.forEach(id => {
             const a = document.getElementById(id);
-            if (a) { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); }
+            if (a) {
+                if (id === 'welcome-sound') {
+                    a.play().catch(e => console.log("Welcome error:", e));
+                } else {
+                    a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {});
+                }
+            }
         });
     }, { once: true });
 

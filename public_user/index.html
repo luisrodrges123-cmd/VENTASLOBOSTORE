@@ -327,8 +327,9 @@
 </head>
 <body>
 
-    <!-- Audio de Notificación Premium -->
+    <!-- Audios de Notificación Premium -->
     <audio id="keyboard-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/teclado.wav" preload="auto"></audio>
+    <audio id="welcome-sound" src="https://github.com/luisrodrges123-cmd/AUDIOS/raw/refs/heads/main/logintrick%20(1)_join%20(2).mp3" preload="auto"></audio>
 
 <div class="navbar">
     <a href="https://postimg.cc/JyW9Jt8R" target="_blank">
@@ -457,8 +458,11 @@
 
     // Desbloqueo de audio
     document.addEventListener('mousedown', () => {
-        const a = document.getElementById("keyboard-sound");
-        if (a) { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); }
+        const keyboard = document.getElementById("keyboard-sound");
+        if (keyboard) { keyboard.play().then(() => { keyboard.pause(); keyboard.currentTime = 0; }).catch(() => {}); }
+
+        const welcome = document.getElementById("welcome-sound");
+        if (welcome) { welcome.play().catch(e => console.log("Bienvenida bloqueada:", e)); }
     }, { once: true });
 
     document.addEventListener('keydown', () => playKeyboardSound());
