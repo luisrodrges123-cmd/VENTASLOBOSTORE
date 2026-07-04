@@ -139,8 +139,10 @@ onValue(ref(db, "orders"), (snapshot) => {
         // No notificar si está en PENDIENTE o si no tiene número
         if (!order.status || order.status === "PENDIENTE" || !order.phone) return;
 
-        // VERSIÓN 7 - FORZANDO RE-ENVÍO ELITE
-        const cacheKey = `notif_v7_force_${orderId}_${order.status}`;
+        // VERSIÓN 8 - FORZANDO RE-ENVÍO (Incluye manual force de la web)
+        const forceId = order.last_notif_force || "";
+        const cacheKey = `notif_v8_${orderId}_${order.status}_${forceId}`;
+
         if (!global.statusNotifCache) global.statusNotifCache = new Set();
 
         if (!global.statusNotifCache.has(cacheKey)) {

@@ -416,13 +416,16 @@
                 <td><a href="https://wa.me/${o.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--neon-cyan); text-decoration:none;">${o.phone}</a></td>
                 <td>${o.name || 'Producto'}</td>
                 <td>
-                    <select onchange="updateOrderStatus('${c.key}', this.value)" style="background:#000; color:${color}; border:1px solid ${color}; padding:5px; border-radius:8px; font-weight:bold; font-size:0.7rem;">
-                        <option value="PENDIENTE" ${status === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
-                        <option value="EN PROCESO" ${status === 'EN PROCESO' ? 'selected' : ''}>EN PROCESO</option>
-                        <option value="ENVIADO" ${status === 'ENVIADO' ? 'selected' : ''}>ENVIADO</option>
-                        <option value="ENTREGADO" ${status === 'ENTREGADO' ? 'selected' : ''}>ENTREGADO</option>
-                        <option value="CANCELADO" ${status === 'CANCELADO' ? 'selected' : ''}>CANCELADO</option>
-                    </select>
+                    <div style="display:flex; gap:5px; align-items:center;">
+                        <select onchange="updateOrderStatus('${c.key}', this.value)" style="background:#000; color:${color}; border:1px solid ${color}; padding:5px; border-radius:8px; font-weight:bold; font-size:0.7rem;">
+                            <option value="PENDIENTE" ${status === 'PENDIENTE' ? 'selected' : ''}>PENDIENTE</option>
+                            <option value="EN PROCESO" ${status === 'EN PROCESO' ? 'selected' : ''}>EN PROCESO</option>
+                            <option value="ENVIADO" ${status === 'ENVIADO' ? 'selected' : ''}>ENVIADO</option>
+                            <option value="ENTREGADO" ${status === 'ENTREGADO' ? 'selected' : ''}>ENTREGADO</option>
+                            <option value="CANCELADO" ${status === 'CANCELADO' ? 'selected' : ''}>CANCELADO</option>
+                        </select>
+                        <button class="action-btn" style="padding:5px; background:var(--neon-purple);" title="Forzar Notificación WhatsApp" onclick="forceNotify('${c.key}')">🔔</button>
+                    </div>
                 </td>
                 <td><button class='action-btn btn-delete' onclick='deleteItem("orders/${c.key}")'>X</button></td>
             </tr>`;
@@ -432,6 +435,13 @@
     async function updateOrderStatus(id, newStatus) {
         await db.ref("orders/" + id).update({ status: newStatus });
         showFloatingAlert("Estado actualizado a: " + newStatus);
+    }
+
+    async function forceNotify(id) {
+        // Añadimos un timestamp de 'last_notif_force' para que el bot detecte un cambio
+        // y sepa que debe reenviar el mensaje actual aunque el estado sea el mismo.
+        await db.ref("orders/" + id).update({ last_notif_force: Date.now() });
+        showFloatingAlert("Comando de notificación forzada enviado 🚀");
     }
 
     db.ref("talk_requests").on("value", snap => {
