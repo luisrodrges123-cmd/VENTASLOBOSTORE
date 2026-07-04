@@ -433,16 +433,16 @@
                     <div class=\"product-price\">$${p.price}</div>
                     <p class=\"product-desc\">${p.description || 'Sin descripción detallada disponible.'}</p>
                     <div class=\"product-stock\">Stock Disponible: ${currentStock}</div>
-                    <button class=\"btn-buy\" onclick=\"openModal('${child.key}', '${p.name}', ${p.price}, '${imgUrl}')\">LO QUIERO</button>
+                    <button class=\"btn-buy\" onclick=\"openModal('${child.key}', '${p.name.replace(/'/g, "\\'")}', ${p.price}, '${imgUrl}', '${(p.category || '').replace(/'/g, "\\'")}', '${(p.description || '').replace(/'/g, "\\'").replace(/\n/g, ' ')}')\">LO QUIERO</button>
                 </div>
             `;
             grid.appendChild(productCard);
         });
     });
 
-    function openModal(id, name, price, img) {
+    function openModal(id, name, price, img, category, description) {
         playKeyboardSound();
-        selectedProd = { id, name, price, img };
+        selectedProd = { id, name, price, img, category, description };
         document.getElementById("orderModal").style.display = "block";
     }
 
@@ -484,17 +484,26 @@
                     orderItem.style.borderLeft = `4px solid ${statusColor}`;
 
                     orderItem.innerHTML = `
-                        <div style=\"display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;\">
-                            <strong style=\"color:white; font-size:1.1rem;\">${o.name || 'Producto'}</strong>
-                            <span style=\"color:${statusColor}; font-size:0.7rem; font-weight:900; border:1px solid ${statusColor}; padding:3px 8px; border-radius:6px; text-transform:uppercase;\">${status}</span>
+                        <div style=\"display:flex; gap:15px; align-items:flex-start; margin-bottom:10px;\">
+                            <img src=\"${o.img || o.imageUrl || 'https://via.placeholder.com/80'}\" style=\"width:80px; height:80px; border-radius:10px; object-fit:cover; border:1px solid var(--neon-cyan);\">
+                            <div style=\"flex:1;\">
+                                <div style=\"display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;\">
+                                    <strong style=\"color:white; font-size:1.1rem;\">${o.name || 'Producto'}</strong>
+                                    <span style=\"color:${statusColor}; font-size:0.7rem; font-weight:900; border:1px solid ${statusColor}; padding:3px 8px; border-radius:6px; text-transform:uppercase;\">${status}</span>
+                                </div>
+                                <div style=\"color:var(--neon-purple); font-size:0.7rem; font-weight:bold; text-transform:uppercase; letter-spacing:1px; margin-bottom:5px;\">${o.category || 'EXCLUSIVO'}</div>
+                                <div style=\"color:var(--text-high); font-size:1.2rem; font-weight:900;\">$${o.price || '-'}</div>
+                            </div>
                         </div>
-                        <div style=\"display:flex; justify-content:space-between; color:var(--text-med); font-size:0.8rem;\">
-                            <span>Precio: $${o.price || '-'}</span>
-                            <span>ID: #${child.key.slice(-5).toUpperCase()}</span>
-                        </div>
-                        <div style=\"display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:8px;\">
-                            <p style=\"margin:0; font-size:0.7rem; color:grey;\">📅 Compra: ${new Date(o.timestamp || Date.now()).toLocaleString()}</p>
-                            <button class=\"btn-track\" style=\"margin:0; padding:5px 10px; font-size:0.6rem; border-color:var(--neon-purple); color:var(--neon-purple);\" onclick='showDigitalTicket(\"${child.key}\", ${JSON.stringify(o).replace(/"/g, '&quot;')})'>GENERAR TICKET</button>
+                        <p style=\"color:var(--text-med); font-size:0.85rem; line-height:1.4; margin:10px 0; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px;\">
+                            ${o.description || 'Información técnica reservada para este artículo premium.'}
+                        </p>
+                        <div style=\"display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;\">
+                            <div style=\"font-size:0.7rem; color:grey;\">
+                                <div>📅 Fecha: ${new Date(o.timestamp || Date.now()).toLocaleString()}</div>
+                                <div>🆔 Orden: #${child.key.slice(-5).toUpperCase()}</div>
+                            </div>
+                            <button class=\"btn-track\" style=\"margin:0; padding:8px 15px; font-size:0.7rem; border-color:var(--neon-purple); color:var(--neon-purple);\" onclick='showDigitalTicket(\"${child.key}\", ${JSON.stringify(o).replace(/"/g, '&quot;')})'>VER TICKET</button>
                         </div>
                     `;
                     resDiv.appendChild(orderItem);

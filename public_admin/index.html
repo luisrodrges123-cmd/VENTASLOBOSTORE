@@ -426,8 +426,16 @@
 
             list.innerHTML += `<tr>
                 <td><strong>${o.username}</strong></td>
-                <td><a href="https://wa.me/${o.phone.replace(/\D/g,'')}" target="_blank" style="color:var(--neon-cyan); text-decoration:none;">${o.phone}</a></td>
-                <td>${o.name || 'Producto'}</td>
+                <td><a href=\"https://wa.me/${o.phone.replace(/\D/g,'')}\" target=\"_blank\" style=\"color:var(--neon-cyan); text-decoration:none;\">${o.phone}</a></td>
+                <td>
+                    <div style=\"display:flex; align-items:center; gap:10px;\">
+                        <img src=\"${o.img || o.imageUrl || 'https://via.placeholder.com/40'}\" style=\"width:40px; height:40px; border-radius:5px; object-fit:cover;\">
+                        <div>
+                            <div style=\"font-weight:bold;\">${o.name || 'Producto'}</div>
+                            <div style=\"color:var(--neon-cyan); font-size:0.75rem;\">$${o.price || '0'}</div>
+                        </div>
+                    </div>
+                </td>
                 <td>
                     <div style="display:flex; gap:5px; align-items:center;">
                         <select onchange="updateOrderStatus('${c.key}', this.value)" style="background:#000; color:${color}; border:1px solid ${color}; padding:5px; border-radius:8px; font-weight:bold; font-size:0.7rem;">
