@@ -448,12 +448,31 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
-    const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
+    const firebaseConfig = { apiKey: "AIzaSyB-7VpETFI6SxNNVEDhrXRnkU1nQjFBV9g", authDomain: "producto-enventa.firebaseapp.com", databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com", projectId: "producto-enventa" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const customerAuth = firebase.auth();
+    const ensureCustomerAuth = () => customerAuth.currentUser ? Promise.resolve(customerAuth.currentUser) : customerAuth.signInAnonymously().then(result => result.user);
+    ensureCustomerAuth().catch(() => {});
+    const storeQuery = new URLSearchParams(location.search).get('sucursal');
+    let storeId = (storeQuery || localStorage.getItem('loboStoreId') || 'lobo-centro').toLowerCase();
+    if (!/^[a-z0-9-]{2,40}$/.test(storeId)) storeId = 'lobo-centro';
+    const storeRef = path => db.ref(`stores/${storeId}/${path}`);
     let selectedProd = null;
+    const storeSelector = document.createElement('select'); storeSelector.setAttribute('aria-label','Seleccionar sucursal');
+    storeSelector.style.cssText = 'display:block;margin:10px auto;padding:10px;background:#111;color:#00F2FF;border:1px solid #00F2FF;border-radius:8px';
+    storeSelector.innerHTML = '<option value="">Cargando sucursales...</option>';
+    const navbar = document.querySelector('.navbar'); if (navbar) navbar.appendChild(storeSelector);
+    db.ref('store_directory').once('value').then(snapshot => {
+      const directory = snapshot.val() || {}; storeSelector.innerHTML = '';
+      Object.entries(directory).filter(([,v])=>v && v.active !== false).forEach(([id,v])=>{ const option=document.createElement('option'); option.value=id; option.textContent=v.name||id; option.selected=id===storeId; storeSelector.appendChild(option); });
+      if (!directory[storeId] && storeSelector.options.length) { storeId=storeSelector.value=storeSelector.options[0].value; localStorage.setItem('loboStoreId',storeId); const url=new URL(location.href); url.searchParams.set('sucursal',storeId); location.replace(url.href); return; }
+      localStorage.setItem('loboStoreId',storeId);
+    }).catch(()=>{ storeSelector.innerHTML = `<option value="${storeId}">${storeId}</option>`; });
+    storeSelector.addEventListener('change',()=>{ localStorage.setItem('loboStoreId',storeSelector.value); const url=new URL(location.href); url.searchParams.set('sucursal',storeSelector.value); location.href=url.href; });
 
     function playKeyboardSound() {
         const sound = document.getElementById("keyboard-sound");
@@ -513,7 +532,7 @@
     document.addEventListener('keydown', () => playKeyboardSound());
     window.addEventListener('focus', () => playKeyboardSound());
 
-    db.ref("products").on("value", (snap) => {
+    storeRef("products").on("value", (snap) => {
         document.getElementById("loader").style.display = "none";
         const grid = document.getElementById("product-grid");
         grid.innerHTML = "";
@@ -593,7 +612,7 @@
         const resDiv = document.getElementById("trackingResults");
         resDiv.innerHTML = "<p style='text-align:center;'>Buscando en el sistema Lobo Store...</p>";
 
-        db.ref("orders").once("value", (snap) => {
+        storeRef("orders").orderByChild("customerUid").equalTo((await ensureCustomerAuth()).uid).once("value", (snap) => {
             resDiv.innerHTML = "";
             let found = false;
 
@@ -690,9 +709,11 @@
 
         const totalPrice = (selectedProd.price * q).toFixed(2);
 
-        // Guardar el pedido incluyendo el ID del producto (selectedProd.id) y cantidad
-        const orderRef = await db.ref("orders").push({
+        // Each order is bound to the anonymous Firebase identity for private tracking.
+        const customer = await ensureCustomerAuth();
+        const orderRef = await storeRef("orders").push({
             ...selectedProd,
+            customerUid: customer.uid,
             productId: selectedProd.id,
             username: n,
             phone: p,

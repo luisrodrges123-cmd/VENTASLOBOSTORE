@@ -23,7 +23,7 @@ class SecondFragment : Fragment() {
 
     private var _binding: FragmentSecondBinding? = null
     private val binding get() = _binding!!
-    private val repository = ArticleRepository()
+    private lateinit var repository: ArticleRepository
     private var currentArticle: Article? = null
 
     override fun onCreateView(
@@ -37,6 +37,9 @@ class SecondFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        val storeId = requireContext().getSharedPreferences("store", android.content.Context.MODE_PRIVATE)
+            .getString("storeId", BuildConfig.MATRIX_STORE_ID) ?: BuildConfig.MATRIX_STORE_ID
+        repository = ArticleRepository(storeId)
         val articleId = arguments?.getString("articleId")
         articleId?.let { loadArticle(it) }
 

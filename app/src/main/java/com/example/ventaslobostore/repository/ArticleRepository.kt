@@ -3,13 +3,15 @@ package com.example.ventaslobostore.repository
 import android.util.Log
 import com.example.ventaslobostore.model.Article
 import com.example.ventaslobostore.model.Order
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.tasks.await
 
-class ArticleRepository {
+class ArticleRepository(storeId: String = com.example.ventaslobostore.BuildConfig.MATRIX_STORE_ID) {
     private val database = FirebaseDatabase.getInstance()
-    private val articlesRef = database.getReference("products")
-    private val ordersRef = database.getReference("orders")
+    private val storeRef = database.getReference("stores").child(storeId)
+    private val articlesRef = storeRef.child("products")
+    private val ordersRef = storeRef.child("orders")
 
     // --- PRODUCTS ---
     suspend fun getArticles(): List<Article> {
@@ -75,10 +77,10 @@ class ArticleRepository {
     }
 
     suspend fun addOrder(order: Order) {
+        val auth = FirebaseAuth.getInstance()
+        val uid = auth.currentUser?.uid ?: auth.signInAnonymously().await().user?.uid.orEmpty()
         val key = ordersRef.push().key
-        key?.let {
-            ordersRef.child(it).setValue(order).await()
-        }
+        key?.let { ordersRef.child(it).setValue(order.copy(customerUid = uid)).await() }
     }
 
     suspend fun updateOrderStatus(orderId: String, newStatus: String) {

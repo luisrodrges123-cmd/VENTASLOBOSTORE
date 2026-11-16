@@ -2,37 +2,74 @@
   "rules": {
     ".read": false,
     ".write": false,
+    "store_directory": {
+      ".read": true,
+      "$storeId": {
+        ".write": "(auth != null && root.child('platform_admins').child(auth.uid).val() === true) || (auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager'))"
+      }
+    },
     "stores": {
       "$storeId": {
         "profile": {
           ".read": "data.child('active').val() === true",
-          ".write": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
+          ".write": "(auth != null && root.child('platform_admins').child(auth.uid).val() === true) || (auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager'))"
         },
         "products": {
           ".read": "root.child('stores').child($storeId).child('profile').child('active').val() === true",
           "$productId": {
-            ".write": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
+            ".write": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')",
+            ".validate": "!newData.exists() || (newData.hasChildren(['name','price','stock']) && newData.child('name').isString() && newData.child('price').isNumber() && newData.child('price').val() >= 0 && newData.child('stock').isNumber() && newData.child('stock').val() >= 0)"
           }
         },
         "orders": {
-          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
-          ".write": false
+          ".read": "(auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')) || (root.child('stores').child($storeId).child('profile').child('active').val() === true && auth != null && query.orderByChild === 'customerUid' && query.equalTo === auth.uid)",
+          ".indexOn": [
+            "customerUid"
+          ],
+          "$orderId": {
+            ".write": "(auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')) || (!data.exists() && root.child('stores').child($storeId).child('profile').child('active').val() === true && auth != null && newData.child('customerUid').val() === auth.uid && newData.child('quantity').isNumber() && newData.child('quantity').val() > 0)",
+            ".validate": "(auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true) || !newData.exists() || (newData.hasChildren(['customerUid','username','phone','name','quantity','timestamp','status']) && newData.child('customerUid').isString() && newData.child('username').isString() && newData.child('phone').isString() && newData.child('name').isString() && newData.child('quantity').isNumber() && newData.child('quantity').val() > 0 && newData.child('timestamp').isNumber() && newData.child('status').isString())"
+          }
         },
         "talk_requests": {
-          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
-          ".write": false
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
+          "$requestId": {
+            ".write": "(auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')) || (!data.exists() && root.child('stores').child($storeId).child('profile').child('active').val() === true && auth != null && newData.child('name').isString() && newData.child('number').isString())"
+          }
+        },
+        "bot_users": {
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
+          ".write": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')"
+        },
+        "bot_logs": {
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
+          ".write": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')"
+        },
+        "messages_history": {
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
+          ".write": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')"
+        },
+        "bot_control": {
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
+          ".write": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')"
         },
         "settings": {
-          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
-          ".write": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
+          ".write": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
         },
         "activity": {
-          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
+          ".read": "auth != null && root.child('stores').child($storeId).child('profile').child('active').val() === true && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'staff')",
           ".write": false
         }
       }
     },
     "memberships": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('platform_admins').child(auth.uid).val() === true)",
+        ".write": "auth != null && root.child('platform_admins').child(auth.uid).val() === true"
+      }
+    },
+    "platform_admins": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
         ".write": false

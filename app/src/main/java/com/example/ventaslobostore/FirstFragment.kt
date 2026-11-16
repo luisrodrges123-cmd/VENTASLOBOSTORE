@@ -19,7 +19,7 @@ class FirstFragment : Fragment() {
 
     private var _binding: FragmentFirstBinding? = null
     private val binding get() = _binding!!
-    private val articleRepository = ArticleRepository()
+    private lateinit var articleRepository: ArticleRepository
     private lateinit var articleAdapter: ArticleAdapter
 
     override fun onCreateView(
@@ -35,6 +35,9 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("FirstFragment", "onViewCreated called")
 
+        val storeId = requireContext().getSharedPreferences("store", android.content.Context.MODE_PRIVATE)
+            .getString("storeId", BuildConfig.MATRIX_STORE_ID) ?: BuildConfig.MATRIX_STORE_ID
+        articleRepository = ArticleRepository(storeId)
         setupRecyclerView()
         loadArticles()
     }

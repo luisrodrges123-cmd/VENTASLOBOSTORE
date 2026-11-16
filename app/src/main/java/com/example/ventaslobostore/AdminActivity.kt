@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class AdminActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdminBinding
-    private val repository = ArticleRepository()
+    private lateinit var repository: ArticleRepository
     private lateinit var articleAdapter: AdminArticleAdapter
     private lateinit var orderAdapter: OrderAdapter
 
@@ -31,6 +31,9 @@ class AdminActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAdminBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val storeId = intent.getStringExtra("storeId") ?: BuildConfig.MATRIX_STORE_ID
+        repository = ArticleRepository(storeId)
+        supportActionBar?.subtitle = "Sucursal: $storeId"
 
         setupUI()
     }
