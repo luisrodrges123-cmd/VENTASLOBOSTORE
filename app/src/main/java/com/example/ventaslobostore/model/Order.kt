@@ -16,6 +16,7 @@ data class Order(
     val quantity: Int = 1,
     val totalPrice: Double = 0.0,
     val productId: String? = null,
+    val customerUid: String = "",
     val description: String = "",
     val category: String = ""
 )

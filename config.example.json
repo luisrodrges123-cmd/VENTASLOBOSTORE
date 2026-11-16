@@ -1,0 +1,9 @@
+{
+  "STORE_ID": "lobo-centro",
+  "STORE_NAME": "Lobo Store - Centro",
+  "ADMIN_JID": "521XXXXXXXXXX@s.whatsapp.net",
+  "GEMINI_API_KEY": "REEMPLAZAR",
+  "FIREBASE_API_KEY": "REEMPLAZAR",
+  "FIREBASE_EMAIL": "admin@example.com",
+  "FIREBASE_PASSWORD": "REEMPLAZAR"
+}

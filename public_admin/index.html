@@ -79,6 +79,14 @@
     </style>
 </head>
 <body style="position: relative;">
+<div id="matrix-auth" style="position:fixed;inset:0;z-index:10001;background:#050505;display:flex;align-items:center;justify-content:center;padding:24px;">
+  <form onsubmit="event.preventDefault(); signInAdmin();" style="width:min(420px,100%);background:#121212;border:1px solid #00F2FF;padding:28px;border-radius:18px;color:#eee;box-shadow:0 0 28px #00f2ff33">
+    <h2 style="color:#00F2FF">LOBO STORE · SUCURSALES</h2><p>Inicia sesión con tu cuenta de administrador.</p>
+    <input id="admin-email" type="email" autocomplete="username" required placeholder="Correo" style="width:100%;padding:13px;margin:8px 0;background:#080808;color:white;border:1px solid #444;border-radius:8px;box-sizing:border-box">
+    <input id="admin-password" type="password" autocomplete="current-password" required placeholder="Contraseña" style="width:100%;padding:13px;margin:8px 0;background:#080808;color:white;border:1px solid #444;border-radius:8px;box-sizing:border-box">
+    <button type="submit" class="btn-main">INICIAR SESIÓN</button><p id="admin-auth-error" role="alert" style="color:#ff6868"></p>
+  </form>
+</div>
 
     <!-- Overlay invisible para forzar interacción y sonido -->
     <div id="audio-starter" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; cursor: pointer; background: rgba(0,0,0,0.01);">
@@ -94,6 +102,14 @@
             <img src="https://i.postimg.cc/VNS1xbH0/logo-lobo.png" alt="Logo" class="logo">
         </a>
         <h1 style="color:var(--neon-cyan); letter-spacing: 5px;">LOBO STORE - MODO PREMIUM ADMIN</h1>
+        <div style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:16px 0">
+          <label for="store-selector">Sucursal:</label><select id="store-selector" aria-label="Seleccionar sucursal" style="padding:10px;background:#080808;color:#00F2FF;border:1px solid #00F2FF;border-radius:8px"></select>
+          <span id="admin-user" style="color:#aaa"></span>
+          <button id="btn-add-store" class="action-btn btn-edit" style="display:none" onclick="createStore()">＋ SUCURSAL</button>
+          <button id="btn-add-member" class="action-btn btn-edit" style="display:none" onclick="assignMember()">＋ PERSONAL</button>
+          <button id="btn-disable-store" class="action-btn btn-delete" style="display:none" onclick="toggleStoreActive()">PAUSAR SUCURSAL</button>
+          <button class="action-btn btn-delete" onclick="firebase.auth().signOut()">CERRAR SESIÓN</button>
+        </div>
     </div>
 
     <!-- Audios de Notificación Premium -->
@@ -197,11 +213,55 @@
 
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
 
-<script>
-    const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
+<script type="module">
+    const firebaseConfig = { apiKey: "AIzaSyB-7VpETFI6SxNNVEDhrXRnkU1nQjFBV9g", authDomain: "producto-enventa.firebaseapp.com", databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com", projectId: "producto-enventa" };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
+    const auth = firebase.auth();
+    const storeQuery = new URLSearchParams(location.search).get('sucursal');
+    let storeId = storeQuery || localStorage.getItem('loboStoreId') || 'lobo-centro';
+    if (!/^[a-z0-9-]{2,40}$/.test(storeId)) storeId = 'lobo-centro';
+    const storeRef = path => db.ref(`stores/${storeId}/${path}`);
+    async function signInAdmin() {
+      const error = document.getElementById('admin-auth-error'); error.textContent = '';
+      try { await auth.signInWithEmailAndPassword(document.getElementById('admin-email').value.trim(), document.getElementById('admin-password').value); }
+      catch (e) { error.textContent = 'No se pudo iniciar sesión. Revisa tus datos y que Email/Password esté habilitado en Firebase.'; }
+    }
+    const gate = document.getElementById('matrix-auth');
+    const adminContainer = document.querySelector('.container');
+    function signInAdmin() {
+      const error = document.getElementById('admin-auth-error'); error.textContent = '';
+      return auth.signInWithEmailAndPassword(document.getElementById('admin-email').value.trim(), document.getElementById('admin-password').value)
+        .catch(() => { error.textContent = 'No se pudo iniciar sesión. Revisa tus datos y que Email/Password esté habilitado en Firebase.'; });
+    }
+    window.signInAdmin = signInAdmin;
+    if (!auth.currentUser) {
+      gate.style.display = 'flex'; adminContainer.style.display = 'none';
+      await new Promise((resolve, reject) => {
+        const unsubscribe = auth.onAuthStateChanged(user => { if (user) { unsubscribe(); resolve(user); } }, reject);
+      });
+    }
+    const user = auth.currentUser;
+    const membershipSnap = await db.ref(`memberships/${user.uid}`).once('value');
+    const memberships = membershipSnap.val() || {};
+    const allowed = Object.entries(memberships).filter(([, m]) => m && m.active === true).map(([id]) => id);
+    if (!allowed.length) { document.getElementById('admin-auth-error').textContent = 'Tu cuenta no tiene sucursales asignadas.'; await auth.signOut(); throw new Error('Cuenta sin membresías activas'); }
+    if (!allowed.includes(storeId)) storeId = allowed[0];
+    localStorage.setItem('loboStoreId', storeId);
+    const directory = (await db.ref('store_directory').once('value')).val() || {};
+    const selector = document.getElementById('store-selector'); selector.innerHTML = '';
+    allowed.forEach(id => { const option = document.createElement('option'); option.value = id; option.textContent = directory[id]?.name || id; option.selected = id === storeId; selector.appendChild(option); });
+    selector.onchange = () => { localStorage.setItem('loboStoreId', selector.value); const url = new URL(location.href); url.searchParams.set('sucursal', selector.value); location.href = url.href; };
+    document.getElementById('admin-user').textContent = user.email || user.uid;
+    const platformAdmin = (await db.ref(`platform_admins/${user.uid}`).once('value')).val() === true;
+    document.getElementById('btn-add-store').style.display = platformAdmin ? 'inline-flex' : 'none';
+    document.getElementById('btn-add-member').style.display = platformAdmin ? 'inline-flex' : 'none';
+    document.getElementById('btn-disable-store').style.display = platformAdmin ? 'inline-flex' : 'none';
+    document.getElementById('btn-disable-store').textContent = directory[storeId]?.active === false ? 'ACTIVAR SUCURSAL' : 'PAUSAR SUCURSAL';
+    gate.style.display = 'none'; adminContainer.style.display = '';
+    auth.onAuthStateChanged(nextUser => { if (!nextUser) location.reload(); });
 
     let productsCache = {}; let usersCache = {};
     let isBotOnline = true;
@@ -225,7 +285,7 @@
     }
 
     // Monitor de alertas de stock con sonido
-    db.ref("bot_logs").orderByChild("type").equalTo("ALERTA").limitToLast(1).on("child_added", (snap) => {
+    storeRef("bot_logs").orderByChild("type").equalTo("ALERTA").limitToLast(1).on("child_added", (snap) => {
         if (!firstLoad) {
             playNotification();
             showFloatingAlert("⚠️ ALERTA DE STOCK: " + snap.val().name);
@@ -233,7 +293,7 @@
     });
 
     // Monitor de pedidos con sonido
-    db.ref("orders").limitToLast(1).on("child_added", (snap) => {
+    storeRef("orders").limitToLast(1).on("child_added", (snap) => {
         if (!firstLoad) {
             playNotification();
             showFloatingAlert("🛒 ¡NUEVO PEDIDO RECIBIDO!");
@@ -261,7 +321,7 @@
     }
 
     // Monitor de estado del bot
-    db.ref("bot_control/status").on("value", (snap) => {
+    storeRef("bot_control/status").on("value", (snap) => {
         isBotOnline = (snap.val() !== "offline");
         const title = document.getElementById("bot-status-title");
         const indicator = document.getElementById("bot-status-indicator");
@@ -284,7 +344,7 @@
 
     async function toggleBot() {
         const newStatus = isBotOnline ? "offline" : "online";
-        await db.ref("bot_control/status").set(newStatus);
+        await storeRef("bot_control/status").set(newStatus);
         alert("Comando de " + (isBotOnline ? "Apagado" : "Encendido") + " enviado con éxito.");
     }
 
@@ -297,8 +357,42 @@
         document.getElementById('sec-'+t).classList.remove('hidden'); document.getElementById('tab-'+t).classList.add('active');
     }
 
+    async function createStore() {
+      const id = (prompt('ID corto para la nueva sucursal (ej. norte-centro):') || '').trim().toLowerCase();
+      if (!/^[a-z0-9-]{2,40}$/.test(id)) return alert('Usa 2 a 40 letras minúsculas, números o guiones.');
+      const name = (prompt('Nombre visible de la sucursal:') || '').trim();
+      if (!name) return;
+      if ((await db.ref(`stores/${id}/profile`).once('value')).exists()) return alert('Ese ID ya existe.');
+      const user = auth.currentUser;
+      const updates = {};
+      updates[`stores/${id}/profile`] = { name, slug: id, active: true, currency: 'MXN', timezone: 'America/Chihuahua' };
+      updates[`store_directory/${id}`] = { name, active: true };
+      updates[`memberships/${user.uid}/${id}`] = { role: 'owner', active: true };
+      try { await db.ref().update(updates); localStorage.setItem('loboStoreId', id); const url = new URL(location.href); url.searchParams.set('sucursal', id); location.href = url.href; }
+      catch (e) { alert('No se pudo crear la sucursal. Revisa las reglas de plataforma.'); }
+    }
+    async function assignMember() {
+      const uid = (prompt('UID de Firebase Auth de la persona (debe existir):') || '').trim();
+      if (!uid || uid.includes('/')) return;
+      const role = (prompt('Rol: owner, manager o staff', 'staff') || '').trim().toLowerCase();
+      if (!['owner','manager','staff','revocar'].includes(role)) return alert('Rol no válido.');
+      try { await db.ref(`memberships/${uid}/${storeId}`).set({ role: role === 'revocar' ? 'staff' : role, active: role !== 'revocar' }); alert(role === 'revocar' ? 'Acceso revocado.' : 'Acceso asignado a ' + document.getElementById('store-selector').selectedOptions[0].textContent); }
+      catch (e) { alert('No se pudo asignar acceso. Confirma que tu cuenta sea administradora de plataforma.'); }
+    }
+
+    async function toggleStoreActive() {
+      const directory = (await db.ref(`store_directory/${storeId}`).once('value')).val() || {};
+      const nextActive = directory.active === false;
+      if (!confirm(nextActive ? '¿Activar esta sucursal?' : '¿Pausar esta sucursal? Dejará de aparecer en el catálogo.')) return;
+      const updates = {};
+      updates[`stores/${storeId}/profile/active`] = nextActive;
+      updates[`store_directory/${storeId}/active`] = nextActive;
+      try { await db.ref().update(updates); alert(nextActive ? 'Sucursal activada.' : 'Sucursal pausada.'); location.reload(); }
+      catch (e) { alert('No se pudo cambiar el estado de la sucursal.'); }
+    }
+
     // --- PRODUCTOS ---
-    db.ref("products").on("value", (snap) => {
+    storeRef("products").on("value", (snap) => {
         const list = document.getElementById("p-list-body"); list.innerHTML = "";
         productsCache = {};
         snap.forEach((child) => {
@@ -331,8 +425,8 @@
             imageUrl: document.getElementById("p-img").value.trim()
         };
         if(!data.name) return alert("Nombre obligatorio");
-        if(id) await db.ref("products/" + id).set(data);
-        else await db.ref("products").push(data);
+        if(id) await storeRef("products/" + id).set(data);
+        else await storeRef("products").push(data);
         alert("¡Inventario actualizado!"); resetProductForm();
     }
 
@@ -358,7 +452,7 @@
     }
 
     // --- USUARIOS ---
-    db.ref("bot_users").on("value", (snap) => {
+    storeRef("bot_users").on("value", (snap) => {
         const list = document.getElementById("u-list-body"); list.innerHTML = "";
         usersCache = {};
         snap.forEach((child) => {
@@ -389,7 +483,7 @@
     async function toggleBlockUser(key, currentlyBlocked) {
         const newStatus = currentlyBlocked ? "active" : "blocked";
         if (confirm(`¿${currentlyBlocked ? 'Desbloquear' : 'Bloquear'} a este usuario?`)) {
-            await db.ref("bot_users/" + key).update({ status: newStatus });
+            await storeRef("bot_users/" + key).update({ status: newStatus });
             showFloatingAlert(currentlyBlocked ? "Usuario Desbloqueado" : "Usuario BLOQUEADO");
         }
     }
@@ -411,14 +505,14 @@
         const nP = document.getElementById("u-phone").value.trim();
         if(!key) return alert("Seleccione un usuario");
 
-        const data = (await db.ref("bot_users/" + key).once("value")).val() || {};
+        const data = (await storeRef("bot_users/" + key).once("value")).val() || {};
         data.name = nN; data.number = nP; data.phone = nP; data.last_seen = data.last_seen || Date.now();
 
         if (nP !== oldPh && nP !== "") {
-            await db.ref("bot_users/" + nP).set(data);
-            await db.ref("bot_users/" + key).remove();
+            await storeRef("bot_users/" + nP).set(data);
+            await storeRef("bot_users/" + key).remove();
         } else {
-            await db.ref("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
+            await storeRef("bot_users/" + key).update({ name: nN, number: nP, phone: nP });
         }
         alert("¡Ficha Sincronizada!"); resetUserForm();
     }
@@ -426,7 +520,7 @@
     function resetUserForm() { document.getElementById("u-key").value = ""; document.getElementById("u-name").value = ""; document.getElementById("u-phone").value = ""; document.getElementById("u-form-title").innerText = "Ficha de Cliente"; }
 
     // --- PEDIDOS Y MENSAJES ---
-    db.ref("orders").on("value", snap => {
+    storeRef("orders").on("value", snap => {
         const list = document.getElementById("o-list-body"); list.innerHTML = "";
         snap.forEach(c => {
             const o = c.val();
@@ -535,7 +629,7 @@
     window.addEventListener('focus', () => playKeyboardSound());
 
     async function updateOrderStatus(orderId, newStatus) {
-        const orderSnap = await db.ref("orders/" + orderId).once("value");
+        const orderSnap = await storeRef("orders/" + orderId).once("value");
         const order = orderSnap.val();
 
         if (newStatus === "COMPRADO") {
@@ -543,7 +637,7 @@
 
             // FALLBACK: Si no hay ID, buscar por nombre exacto
             if (!targetProductId && order.name) {
-                const prodSnap = await db.ref("products").once("value");
+                const prodSnap = await storeRef("products").once("value");
                 prodSnap.forEach(pChild => {
                     if (pChild.val().name === order.name) {
                         targetProductId = pChild.key;
@@ -552,7 +646,7 @@
             }
 
             if (targetProductId) {
-                const productRef = db.ref("products/" + targetProductId);
+                const productRef = storeRef("products/" + targetProductId);
                 const productSnap = await productRef.once("value");
                 if (productSnap.exists()) {
                     const currentStock = parseInt(productSnap.val().stock) || 0;
@@ -567,7 +661,7 @@
             }
         }
 
-        await db.ref("orders/" + orderId).update({ status: newStatus });
+        await storeRef("orders/" + orderId).update({ status: newStatus });
         playStatusSound();
         showFloatingAlert("Estado actualizado a: " + newStatus);
     }
@@ -575,11 +669,11 @@
     async function forceNotify(id) {
         // Añadimos un timestamp de 'last_notif_force' para que el bot detecte un cambio
         // y sepa que debe reenviar el mensaje actual aunque el estado sea el mismo.
-        await db.ref("orders/" + id).update({ last_notif_force: Date.now() });
+        await storeRef("orders/" + id).update({ last_notif_force: Date.now() });
         showFloatingAlert("Comando de notificación forzada enviado 🚀");
     }
 
-    db.ref("talk_requests").on("value", snap => {
+    storeRef("talk_requests").on("value", snap => {
         const list = document.getElementById("m-list-body"); list.innerHTML = "";
         snap.forEach(c => {
             const m = c.val(); const date = new Date(m.timestamp).toLocaleString();
@@ -589,7 +683,7 @@
     });
 
     // --- LOGS MAESTROS (IA + SISTEMA) ---
-    db.ref("bot_logs").limitToLast(50).on("value", (snap) => {
+    storeRef("bot_logs").limitToLast(50).on("value", (snap) => {
         const term = document.getElementById("terminal-logs"); term.innerHTML = "";
         snap.forEach((child) => {
             const l = child.val();
@@ -602,9 +696,11 @@
         term.scrollTop = term.scrollHeight;
     });
 
-    async function clearHistory() { if(confirm("¿VACIAR LOGS DEL SISTEMA?")) await db.ref("bot_logs").remove(); }
-    async function deleteItem(path) { if(confirm("¿Eliminar permanentemente?")) await db.ref(path).remove(); }
-    async function resetBotSession() { if(confirm("¿CONFIRMAR LOGOUT GLOBAL?")) { await db.ref("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
+    async function clearHistory() { if(confirm("¿VACIAR LOGS DEL SISTEMA?")) await storeRef("bot_logs").remove(); }
+    async function deleteItem(path) { if(confirm("¿Eliminar permanentemente?")) await storeRef(path).remove(); }
+    async function resetBotSession() { if(confirm("¿CONFIRMAR LOGOUT GLOBAL?")) { await storeRef("bot_control/command").set({ action: "LOGOUT", timestamp: Date.now() }); alert("Comando enviado."); } }
+
+    window.showTab = showTab; window.createStore = createStore; window.assignMember = assignMember; window.toggleStoreActive = toggleStoreActive; window.toggleBot = toggleBot; window.resetBotSession = resetBotSession; window.saveProduct = saveProduct; window.resetProductForm = resetProductForm; window.prepareProductEdit = prepareProductEdit; window.deleteItem = deleteItem; window.saveUser = saveUser; window.resetUserForm = resetUserForm; window.prepareUserEdit = prepareUserEdit; window.updateUserStatus = updateUserStatus; window.updateOrderStatus = updateOrderStatus; window.forceNotify = forceNotify; window.clearHistory = clearHistory; window.unlockAllAudio = unlockAllAudio; 
 </script>
 </body>
 </html>

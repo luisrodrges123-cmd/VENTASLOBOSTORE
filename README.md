@@ -26,3 +26,8 @@ Todo el diseño visual está centrado en la identidad de **Ventas Lobo Store**, 
 
 ---
 © 2026 Ventas Lobo Store - Todos los derechos reservados.
+
+
+## Modo Matrix: varias sucursales
+
+El catálogo, el panel web, Android y el bot ya tienen soporte de rutas por sucursal. Antes de usarlo, configura Firebase Authentication, migra los datos existentes y revisa las reglas de seguridad siguiendo la [guía de arquitectura multi-sucursal](docs/arquitectura-multisucursal.md). La migración conserva los datos originales y ofrece modo simulación. No despliegues las reglas antes de completar la configuración.

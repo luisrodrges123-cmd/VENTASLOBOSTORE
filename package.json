@@ -4,7 +4,9 @@
   "description": "WhatsApp Bot Premium para Lobo Store",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js"
+    "start": "node bot.js",
+    "migrate:matrix": "node scripts/migrate-matrix.js",
+    "migrate:matrix:apply": "node scripts/migrate-matrix.js --apply"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

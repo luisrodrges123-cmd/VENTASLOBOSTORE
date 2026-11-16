@@ -11,24 +11,24 @@ const QRCode = require('qrcode');
 const pino = require('pino');
 const { initializeApp } = require('firebase/app');
 const { getDatabase, ref, push, update, onValue, set, get } = require('firebase/database');
+const { initializeAuth, inMemoryPersistence, signInWithEmailAndPassword } = require('firebase/auth');
 const fs = require('fs');
 const express = require('express');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const NodeCache = require("node-cache");
 
 // --- CARGAR CONFIGURACIÓN ---
-let GEMINI_API_KEY = "";
-try {
-    const config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-    GEMINI_API_KEY = config.GEMINI_API_KEY;
-} catch (e) {
-    console.error("❌ Error cargando config.json. Asegúrate de que el archivo exista.");
-}
+let config = {};
+try { config = JSON.parse(fs.readFileSync('config.json', 'utf8')); }
+catch (e) { console.error("❌ Falta config.json. Consulta config.example.json."); }
+const GEMINI_API_KEY = config.GEMINI_API_KEY || "";
+const STORE_ID = (process.env.STORE_ID || config.STORE_ID || "lobo-centro").toLowerCase();
+if (!/^[a-z0-9-]{2,40}$/.test(STORE_ID)) throw new Error("STORE_ID inválido");
 
 // 🐺 CONFIGURACIÓN MAESTRA LOBO STORE
 const LOGO_OFFICIAL = 'https://i.postimg.cc/VNS1xbH0/logo-lobo.png';
-const ADMIN_JID = '5216682515249@s.whatsapp.net';
-const SESSION_PATH = 'auth_info_baileys';
+const ADMIN_JID = config.ADMIN_JID || '5216682515249@s.whatsapp.net';
+const SESSION_PATH = process.env.SESSION_PATH || `auth_info_baileys/${STORE_ID}`;
 
 // --- CACHÉ PARA REINTENTOS (FIX "ESPERANDO MENSAJE") ---
 const msgRetryCounterCache = new NodeCache();
@@ -38,9 +38,18 @@ const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 // --- FIREBASE INFRAESTRUCTURA ---
-const firebaseConfig = { databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com" };
+const firebaseConfig = { apiKey: config.FIREBASE_API_KEY, authDomain: "producto-enventa.firebaseapp.com", databaseURL: "https://producto-enventa-default-rtdb.firebaseio.com", projectId: "producto-enventa" };
+if (!firebaseConfig.apiKey || !config.FIREBASE_EMAIL || !config.FIREBASE_PASSWORD) {
+    throw new Error("Configura FIREBASE_API_KEY, FIREBASE_EMAIL y FIREBASE_PASSWORD en config.json");
+}
 const firebaseApp = initializeApp(firebaseConfig);
+const botAuth = initializeAuth(firebaseApp, { persistence: inMemoryPersistence });
 const db = getDatabase(firebaseApp);
+const storeRef = path => ref(db, `stores/${STORE_ID}/${path}`);
+
+async function startStoreRuntime() {
+    await signInWithEmailAndPassword(botAuth, config.FIREBASE_EMAIL, config.FIREBASE_PASSWORD);
+    console.log(`[FIREBASE] Conectado a la sucursal ${STORE_ID}`);
 
 const sessions = {};
 let stockAlertsSent = new Set();
@@ -49,7 +58,7 @@ let botEnabled = true;
 // --- FUNCIONALIDAD DE REGISTRO DE LOGS EN WEB ---
 async function logToWeb(type, name, message) {
     try {
-        await push(ref(db, 'bot_logs'), {
+        await push(storeRef('bot_logs'), {
             type, // 'SISTEMA', 'IA', 'ALERTA', 'CHAT'
             name,
             message,
@@ -61,7 +70,7 @@ async function logToWeb(type, name, message) {
 }
 
 // --- MONITOR DE ESTADO Y COMANDOS ---
-onValue(ref(db, "bot_control/status"), (snapshot) => {
+onValue(storeRef("bot_control/status"), (snapshot) => {
     botEnabled = (snapshot.val() !== "offline");
     const msg = `El bot está: ${botEnabled ? 'ENCENDIDO ✅' : 'APAGADO ❌'}`;
     console.log(`[SISTEMA] ${msg}`);
@@ -72,7 +81,7 @@ onValue(ref(db, "bot_control/status"), (snapshot) => {
 function checkStockAlerts() {
     if (!global.botSocket) return;
 
-    get(ref(db, "products")).then((snapshot) => {
+    get(storeRef("products")).then((snapshot) => {
         if (!snapshot.exists()) return;
         snapshot.forEach((child) => {
             const p = child.val();
@@ -103,7 +112,7 @@ function checkStockAlerts() {
     });
 }
 
-onValue(ref(db, "products"), () => {
+onValue(storeRef("products"), () => {
     console.log("[SISTEMA] Cambio en productos detectado, verificando stock...");
     checkStockAlerts();
 });
@@ -129,7 +138,7 @@ function formatJid(phone) {
 }
 
 // --- MONITOR DE CAMBIOS DE ESTADO EN PEDIDOS (MODO ELITE) ---
-onValue(ref(db, "orders"), (snapshot) => {
+onValue(storeRef("orders"), (snapshot) => {
     if (!snapshot.exists() || !global.botSocket) return;
 
     snapshot.forEach((child) => {
@@ -165,7 +174,7 @@ onValue(ref(db, "orders"), (snapshot) => {
                               `${statusEmoji} *ESTADO:* 【 ${order.status.toUpperCase()} 】\n\n` +
                               `━━━━━━━━━━━━━━━━━━━\n` +
                               `✨ *Mensaje:* Estamos trabajando para que tu tecnología llegue lo antes posible.\n\n` +
-                              `🔗 *Rastreo en vivo:* https://producto-enventa-63d4e.firebaseapp.com/\n\n` +
+                              `🔗 *Rastreo en vivo:* https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}\n\n` +
                               `¡Gracias por tu preferencia! 🐺✨`;
 
             const imgUrl = order.img || order.imageUrl;
@@ -205,7 +214,7 @@ async function askAI(prompt, history = [], inventory = "", userName = "Cliente")
         2. Si el cliente dice que quiere COMPRAR o ADQUIRIR un producto:
            - Pregúntale amablemente su *Nombre Completo* y su *Teléfono de contacto*.
            - Explícale que una vez que de sus datos, el administrador lo contactará para el pago.
-           - También puedes darle este link para que lo haga más rápido él mismo: https://producto-enventa-63d4e.firebaseapp.com/
+           - También puedes darle este link para que lo haga más rápido él mismo: https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}
         3. Si un producto no está en la lista de arriba, dile que está AGOTADO momentáneamente.
         4. Si el cliente da sus datos (Nombre y Teléfono), confírmale que has registrado su interés y que pronto le hablaremos.
 
@@ -220,16 +229,16 @@ async function askAI(prompt, history = [], inventory = "", userName = "Cliente")
         return response.text();
     } catch (e) {
         console.error("Error en IA:", e);
-        return "🐺 ¡Hola! Estamos teniendo una alta demanda. ¿En qué puedo ayudarte? Puedes ver nuestro catálogo aquí: https://producto-enventa-63d4e.firebaseapp.com/";
+        return "🐺 ¡Hola! Estamos teniendo una alta demanda. ¿En qué puedo ayudarte? Puedes ver nuestro catálogo aquí: https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}";
     }
 }
 
 // --- MONITOR DE COMANDOS REMOTOS ---
-onValue(ref(db, "bot_control/command"), async (snapshot) => {
+onValue(storeRef("bot_control/command"), async (snapshot) => {
     const cmd = snapshot.val();
     if (cmd && cmd.action === "LOGOUT") {
         console.log('\n🚨 ORDEN DE CIERRE RECIBIDA...');
-        await set(ref(db, "bot_control/command"), null);
+        await set(storeRef("bot_control/command"), null);
         if (fs.existsSync(SESSION_PATH)) fs.rmSync(SESSION_PATH, { recursive: true, force: true });
         process.exit(0);
     }
@@ -312,7 +321,7 @@ async function startProfessionalBot() {
 
         // --- GUARDAR HISTORIAL ---
         try {
-            await push(ref(db, 'messages_history'), {
+            await push(storeRef('messages_history'), {
                 name: pushName,
                 number: userWAID,
                 message: text,
@@ -321,7 +330,7 @@ async function startProfessionalBot() {
         } catch (e) {}
 
         // --- SINCRONIZACIÓN DE USUARIO ---
-        const userRef = ref(db, `bot_users/${userWAID}`);
+        const userRef = storeRef(`bot_users/${userWAID}`);
         let userData = {};
         try {
             const snap = await get(userRef);
@@ -357,7 +366,7 @@ async function startProfessionalBot() {
             await sock.sendMessage(ADMIN_JID, { text: aviso });
 
             try {
-                await push(ref(db, 'talk_requests'), { name: displayName, number: finalNum, whatsapp_id: userWAID, timestamp: Date.now() });
+                await push(storeRef('talk_requests'), { name: displayName, number: finalNum, whatsapp_id: userWAID, timestamp: Date.now() });
                 if(detectedNum.length >= 10) await update(userRef, { number: detectedNum, phone: detectedNum });
             } catch (e) {}
             return;
@@ -373,7 +382,7 @@ async function startProfessionalBot() {
         // COMANDO PARA PEDIR TICKET / RASTREO
         if (lowerText.includes('ticket') || lowerText.includes('mi pedido') || lowerText.includes('rastrear')) {
             try {
-                const ordersSnap = await get(ref(db, 'orders'));
+                const ordersSnap = await get(storeRef('orders'));
                 let lastOrder = null;
 
                 if (ordersSnap.exists()) {
@@ -398,7 +407,7 @@ async function startProfessionalBot() {
                                       `📅 *FECHA:* ${new Date(lastOrder.timestamp).toLocaleDateString()}\n` +
                                       `💎 *ESTADO:* 【 ${lastOrder.status || 'PENDIENTE'} 】\n` +
                                       `━━━━━━━━━━━━━━━━━━━\n` +
-                                      `🔗 *Rastreo Web:* https://producto-enventa-63d4e.firebaseapp.com/\n\n` +
+                                      `🔗 *Rastreo Web:* https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}\n\n` +
                                       `✨ _Gracias por tu confianza._ 🐺`;
 
                     const imgUrl = lastOrder.img || lastOrder.imageUrl;
@@ -410,7 +419,7 @@ async function startProfessionalBot() {
                     logToWeb('CHAT', 'SISTEMA', `Ticket enviado a petición de ${pushName}`);
                     return;
                 } else {
-                    await sock.sendMessage(from, { text: `🐺 Lo siento, *${pushName}*, no encontré pedidos recientes vinculados a este número.\n\nPuedes intentar rastrearlo manualmente aquí: https://producto-enventa-63d4e.firebaseapp.com/` });
+                    await sock.sendMessage(from, { text: `🐺 Lo siento, *${pushName}*, no encontré pedidos recientes vinculados a este número.\n\nPuedes intentar rastrearlo manualmente aquí: https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}` });
                     return;
                 }
             } catch (e) {
@@ -436,7 +445,7 @@ async function startProfessionalBot() {
             // Buscar Imagen del Producto para el Admin
             let pedidoImagen = null;
             try {
-                const pSnap = await get(ref(db, 'products'));
+                const pSnap = await get(storeRef('products'));
                 if (pSnap.exists()) {
                     pSnap.forEach(c => {
                         const p = c.val();
@@ -477,7 +486,7 @@ async function startProfessionalBot() {
                                   `💎 *ESTADO:* 【 PROCESANDO 】\n` +
                                   `━━━━━━━━━━━━━━━━━━━\n` +
                                   `✨ *Siguiente Paso:* Un asesor validará tu orden en minutos.\n\n` +
-                                  `🔗 *Rastreo Online:* https://producto-enventa-63d4e.firebaseapp.com/\n\n` +
+                                  `🔗 *Rastreo Online:* https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}\n\n` +
                                   `¡Gracias por elegir Lobo Store! 🐺✨`;
 
             if (pedidoImagen && pedidoImagen.startsWith('http')) {
@@ -492,7 +501,7 @@ async function startProfessionalBot() {
         // RESPUESTA CON IA
         try {
             // 1. Obtener inventario para la IA y buscar imagen relevante
-            const pSnap = await get(ref(db, 'products'));
+            const pSnap = await get(storeRef('products'));
             let inventoryStr = "";
             let bestMatchImage = null;
 
@@ -529,7 +538,7 @@ async function startProfessionalBot() {
 
         } catch (e) {
             console.log("Error en flujo IA:", e);
-            const fallback = `🐺 ¡Hola! Soy el asistente de Lobo Store. Visita nuestro catálogo real aquí: https://producto-enventa-63d4e.firebaseapp.com/`;
+            const fallback = `🐺 ¡Hola! Soy el asistente de Lobo Store. Visita nuestro catálogo real aquí: https://producto-enventa-63d4e.firebaseapp.com/?sucursal=${STORE_ID}`;
             await sock.sendMessage(from, { text: fallback });
             logToWeb('SISTEMA', 'ERROR', 'Fallo en motor IA');
         }
@@ -540,3 +549,7 @@ app_web.listen(port, () => {
     startProfessionalBot().catch(e => console.error(e));
     logToWeb('SISTEMA', 'CORE', 'Servidor de control iniciado');
 });
+
+}
+
+startStoreRuntime().catch(error => { console.error("No se pudo iniciar el bot de la sucursal:", error); process.exitCode = 1; });
