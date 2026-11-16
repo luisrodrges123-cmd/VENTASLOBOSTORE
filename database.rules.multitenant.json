@@ -1,0 +1,42 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "stores": {
+      "$storeId": {
+        "profile": {
+          ".read": "data.child('active').val() === true",
+          ".write": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
+        },
+        "products": {
+          ".read": "root.child('stores').child($storeId).child('profile').child('active').val() === true",
+          "$productId": {
+            ".write": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
+          }
+        },
+        "orders": {
+          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
+          ".write": false
+        },
+        "talk_requests": {
+          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
+          ".write": false
+        },
+        "settings": {
+          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
+          ".write": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true && (root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'owner' || root.child('memberships').child(auth.uid).child($storeId).child('role').val() === 'manager')"
+        },
+        "activity": {
+          ".read": "auth != null && root.child('memberships').child(auth.uid).child($storeId).child('active').val() === true",
+          ".write": false
+        }
+      }
+    },
+    "memberships": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    }
+  }
+}
